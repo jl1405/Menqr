@@ -35,7 +35,7 @@ const app = {
     loadPublicData: async (restaurantId) => {
         try {
             // Load restaurant config
-            const { data: restData, error: restErr } = await supabase
+            const { data: restData, error: restErr } = await supabaseClient
                 .from('restaurants')
                 .select('*')
                 .eq('id', restaurantId)
@@ -63,7 +63,7 @@ const app = {
             };
 
             // Load Categories
-            const { data: catData } = await supabase
+            const { data: catData } = await supabaseClient
                 .from('categories')
                 .select('*')
                 .eq('restaurant_id', restaurantId)
@@ -72,7 +72,7 @@ const app = {
             if (catData) app.state.categorias = catData;
 
             // Load Products
-            const { data: prodData } = await supabase
+            const { data: prodData } = await supabaseClient
                 .from('products')
                 .select('*')
                 .eq('restaurant_id', restaurantId)
@@ -90,7 +90,7 @@ const app = {
     loadAdminData: async () => {
         try {
             // Fetch restaurant for current user
-            let { data: restData, error } = await supabase
+            let { data: restData, error } = await supabaseClient
                 .from('restaurants')
                 .select('*')
                 .eq('user_id', app.state.user.id)
@@ -98,7 +98,7 @@ const app = {
 
             // If no restaurant exists, create one
             if (!restData) {
-                const { data: newRest, error: createErr } = await supabase
+                const { data: newRest, error: createErr } = await supabaseClient
                     .from('restaurants')
                     .insert([{ user_id: app.state.user.id }])
                     .select()
@@ -127,7 +127,7 @@ const app = {
             };
 
             // Fetch categories
-            const { data: catData } = await supabase
+            const { data: catData } = await supabaseClient
                 .from('categories')
                 .select('*')
                 .eq('restaurant_id', app.state.restaurantId)
@@ -135,7 +135,7 @@ const app = {
             if (catData) app.state.categorias = catData;
 
             // Fetch products
-            const { data: prodData } = await supabase
+            const { data: prodData } = await supabaseClient
                 .from('products')
                 .select('*')
                 .eq('restaurant_id', app.state.restaurantId)
@@ -185,7 +185,7 @@ const app = {
             if (!email || !pass) return app.auth.showMessage("Ingresa tus datos", "error");
             
             try {
-                const { data, error } = await supabase.auth.signInWithPassword({
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: email,
                     password: pass
                 });
@@ -211,7 +211,7 @@ const app = {
             if (pass !== passConfirm) return app.auth.showMessage("Las contraseñas no coinciden", "error");
             
             try {
-                const { data, error } = await supabase.auth.signUp({
+                const { data, error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: pass
                 });
@@ -244,7 +244,7 @@ const app = {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('menu')) return; // In public mode
 
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
         
         if (session) {
             app.state.user = session.user;
@@ -255,7 +255,7 @@ const app = {
         }
 
         // Listen for auth state changes
-        supabase.auth.onAuthStateChange(async (event, session) => {
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_OUT') {
                 app.state.user = null;
                 app.ui.switchView('landing');
@@ -271,7 +271,7 @@ const app = {
     },
 
     logout: async () => {
-        await supabase.auth.signOut();
+        await supabaseClient.auth.signOut();
     },
 
     applyBranding: () => {
@@ -292,7 +292,7 @@ const app = {
         const fileName = `${Math.random()}.${fileExt}`;
         const filePath = `${app.state.user.id}/${fileName}`;
 
-        const { data, error } = await supabase.storage
+        const { data, error } = await supabaseClient.storage
             .from('menqr-media')
             .upload(filePath, file);
 
@@ -302,7 +302,7 @@ const app = {
             return null;
         }
 
-        const { data: publicUrlData } = supabase.storage
+        const { data: publicUrlData } = supabaseClient.storage
             .from('menqr-media')
             .getPublicUrl(filePath);
 
@@ -347,7 +347,7 @@ const app = {
             const name = document.getElementById('cat-name').value.trim();
             if (!name) return;
             
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('categories')
                 .insert([{ restaurant_id: app.state.restaurantId, name: name }])
                 .select()
@@ -364,7 +364,7 @@ const app = {
         delete: async (id) => {
             if(!confirm("¿Borrar categoría? Los productos de esta categoría quedarán sin categoría.")) return;
             
-            const { error } = await supabase.from('categories').delete().eq('id', id);
+            const { error } = await supabaseClient.from('categories').delete().eq('id', id);
             
             if(error) return alert("Error borrando categoría");
 
@@ -403,7 +403,7 @@ const app = {
 
             if (imageUrl) productData.image_url = imageUrl;
 
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('products')
                 .insert([productData])
                 .select()
@@ -419,7 +419,7 @@ const app = {
             const p = app.state.productos.find(p => p.id === id);
             if(p) {
                 const newAvail = !p.available;
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('products')
                     .update({ available: newAvail })
                     .eq('id', id);
@@ -435,7 +435,7 @@ const app = {
         delete: async (id) => {
             if(!confirm("¿Borrar producto?")) return;
             
-            const { error } = await supabase.from('products').delete().eq('id', id);
+            const { error } = await supabaseClient.from('products').delete().eq('id', id);
             
             if(error) return alert("Error borrando producto");
 
@@ -473,7 +473,7 @@ const app = {
             if (logoUrl) updateData.logo_url = logoUrl;
             if (coverUrl) updateData.cover_url = coverUrl;
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('restaurants')
                 .update(updateData)
                 .eq('id', app.state.restaurantId);
@@ -527,7 +527,7 @@ const app = {
             const emoji = document.getElementById('banner-emoji').value;
             const date = document.getElementById('banner-date').value;
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('restaurants')
                 .update({
                     banner_active: active,
