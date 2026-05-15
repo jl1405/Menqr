@@ -204,11 +204,15 @@ const app = {
                 if (error) {
                     return alert(error.message);
                 }
-                alert("Cuenta creada. Redirigiendo al panel...");
-                if (data.user && data.session) {
+                
+                if (data.session) {
+                    alert("Cuenta creada. Redirigiendo al panel...");
                     app.state.user = data.user;
                     app.ui.switchView('admin');
                     await app.loadAdminData();
+                } else {
+                    alert("¡Cuenta creada exitosamente! Por favor, revisa tu bandeja de entrada y confirma tu correo electrónico antes de iniciar sesión.");
+                    app.auth.switchTab('login');
                 }
             } catch (error) {
                 console.error(error);
