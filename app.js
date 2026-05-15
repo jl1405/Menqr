@@ -156,11 +156,25 @@ const app = {
     },
 
     auth: {
+        showMessage: (msg, type = 'success') => {
+            const msgEl = document.getElementById('auth-message');
+            if (msgEl) {
+                msgEl.textContent = msg;
+                msgEl.style.display = 'block';
+                msgEl.style.backgroundColor = type === 'success' ? '#dcfce7' : '#fee2e2';
+                msgEl.style.color = type === 'success' ? '#166534' : '#991b1b';
+                msgEl.style.border = `1px solid ${type === 'success' ? '#86efac' : '#fca5a5'}`;
+            } else {
+                alert(msg);
+            }
+        },
         switchTab: (tab) => {
             document.querySelectorAll('.auth-tab').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.auth-form').forEach(el => {
                 el.style.display = 'none';
             });
+            const msgEl = document.getElementById('auth-message');
+            if(msgEl) msgEl.style.display = 'none'; // hide message when switching tabs
             
             document.querySelector(`.auth-tab[onclick*="${tab}"]`).classList.add('active');
             document.getElementById(`form-${tab}`).style.display = 'flex';
@@ -168,7 +182,7 @@ const app = {
         login: async () => {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
-            if (!email || !pass) return alert("Ingresa tus datos");
+            if (!email || !pass) return app.auth.showMessage("Ingresa tus datos", "error");
             
             try {
                 const { data, error } = await supabase.auth.signInWithPassword({
@@ -177,7 +191,7 @@ const app = {
                 });
 
                 if (error) {
-                    return alert(error.message);
+                    return app.auth.showMessage(error.message, "error");
                 } else {
                     app.state.user = data.user;
                     app.ui.switchView('admin');
@@ -185,6 +199,7 @@ const app = {
                 }
             } catch (error) {
                 console.error(error);
+                app.auth.showMessage("Error inesperado", "error");
             }
         },
         register: async () => {
@@ -192,8 +207,8 @@ const app = {
             const pass = document.getElementById('register-password').value;
             const passConfirm = document.getElementById('register-password-confirm').value;
             
-            if (!email || !pass) return alert("Ingresa tus datos");
-            if (pass !== passConfirm) return alert("Las contraseñas no coinciden");
+            if (!email || !pass) return app.auth.showMessage("Ingresa tus datos", "error");
+            if (pass !== passConfirm) return app.auth.showMessage("Las contraseñas no coinciden", "error");
             
             try {
                 const { data, error } = await supabase.auth.signUp({
@@ -202,20 +217,25 @@ const app = {
                 });
                 
                 if (error) {
-                    return alert(error.message);
+                    return app.auth.showMessage(error.message, "error");
                 }
                 
                 if (data.session) {
-                    alert("Cuenta creada. Redirigiendo al panel...");
-                    app.state.user = data.user;
-                    app.ui.switchView('admin');
-                    await app.loadAdminData();
+                    app.auth.showMessage("¡Registro exitoso! Entrando...", "success");
+                    setTimeout(async () => {
+                        app.state.user = data.user;
+                        app.ui.switchView('admin');
+                        await app.loadAdminData();
+                    }, 1000);
                 } else {
-                    alert("¡Cuenta creada exitosamente! Por favor, revisa tu bandeja de entrada y confirma tu correo electrónico antes de iniciar sesión.");
-                    app.auth.switchTab('login');
+                    app.auth.showMessage("¡Cuenta creada exitosamente! Revisa tu bandeja de entrada para confirmarla.", "success");
+                    setTimeout(() => {
+                        app.auth.switchTab('login');
+                    }, 3000);
                 }
             } catch (error) {
                 console.error(error);
+                app.auth.showMessage("Error inesperado", "error");
             }
         }
     },
