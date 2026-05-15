@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MenQR - Gestor de Menús Digitales</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link id="theme-font" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- QR Code Generator -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- APP CONTAINER -->
+    <div id="app" class="app-container">
+        <!-- VISTA: LANDING PAGE -->
+        <section id="view-landing" class="view landing-view active">
+            <nav class="landing-nav">
+                <div class="landing-logo">
+                    <i data-lucide="qr-code"></i>
+                    <span>MenQR</span>
+                </div>
+                <button class="btn-primary" onclick="app.ui.switchView('auth')">Iniciar Sesión</button>
+            </nav>
+            <main class="landing-main">
+                <div class="hero-section">
+                    <h1 class="hero-title">El menú de tu restaurante, <span>más inteligente</span></h1>
+                    <p class="hero-subtitle">Crea tu menú digital en minutos, genera tu código QR y ofrécele a tus clientes una experiencia moderna y sin contacto.</p>
+                    <button class="btn-primary hero-btn" onclick="app.ui.switchView('auth')">Empieza Gratis Ahora</button>
+                </div>
+                <div class="features-section">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i data-lucide="smartphone"></i></div>
+                        <h3>Diseño Móvil Perfecto</h3>
+                        <p>Tu menú se verá increíble en cualquier dispositivo sin necesidad de descargar aplicaciones.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i data-lucide="palette"></i></div>
+                        <h3>Totalmente Personalizable</h3>
+                        <p>Adapta los colores, el logo y la tipografía para que coincidan con la identidad de tu marca.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i data-lucide="zap"></i></div>
+                        <h3>Actualizaciones en Vivo</h3>
+                        <p>Cambia precios o disponibilidad de platillos y tus clientes lo verán al instante.</p>
+                    </div>
+                </div>
+            </main>
+            <footer class="landing-footer">
+                <p>&copy; 2026 MenQR. Impulsa tu restaurante al futuro.</p>
+            </footer>
+        </section>
+
+        <!-- VISTA: AUTENTICACIÓN -->
+        <section id="view-auth" class="view auth-view">
+            <div class="glass-card auth-card">
+                <div class="auth-header">
+                    <div class="logo-icon"><i data-lucide="qr-code"></i></div>
+                    <h1>MenQR</h1>
+                    <p>Gestiona tu menú digital</p>
+                </div>
+                <div class="auth-form">
+                    <input type="email" id="auth-email" placeholder="Correo electrónico" required>
+                    <input type="password" id="auth-password" placeholder="Contraseña" required>
+                    <button class="btn-primary" onclick="app.login()">Entrar / Registrarse</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA: ADMINISTRADOR (DASHBOARD) -->
+        <section id="view-admin" class="view admin-view">
+            
+            <!-- Contenido Principal del Dashboard -->
+            <main class="admin-content">
+                
+                <!-- SECCIÓN: PRODUCTOS -->
+                <div id="sec-productos" class="admin-section active">
+                    <div class="section-header">
+                        <h2>Productos</h2>
+                        <button class="btn-primary" onclick="app.ui.showModal('modal-producto')"><i data-lucide="plus"></i> Añadir</button>
+                    </div>
+                    <div id="productos-list" class="items-list">
+                        <!-- Lista de productos dinámica -->
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: CATEGORÍAS -->
+                <div id="sec-categorias" class="admin-section">
+                    <div class="section-header">
+                        <h2>Categorías</h2>
+                        <button class="btn-primary" onclick="app.ui.showModal('modal-categoria')"><i data-lucide="plus"></i> Añadir</button>
+                    </div>
+                    <div id="categorias-list" class="items-list">
+                        <!-- Lista de categorías dinámica -->
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: BRANDING -->
+                <div id="sec-branding" class="admin-section">
+                    <div class="section-header">
+                        <h2>Branding</h2>
+                        <p>Personaliza la identidad de tu restaurante</p>
+                    </div>
+                    <div class="branding-container">
+                        <div class="branding-form glass-card">
+                            <div class="form-group">
+                                <label>Nombre del Restaurante</label>
+                                <input type="text" id="brand-name" oninput="app.branding.updatePreview()">
+                            </div>
+                            <div class="form-group">
+                                <label>Descripción Corta</label>
+                                <input type="text" id="brand-desc" oninput="app.branding.updatePreview()">
+                            </div>
+                            <div class="form-group">
+                                <label>URL del Logo (Opcional)</label>
+                                <input type="text" id="brand-logo" placeholder="https://..." oninput="app.branding.updatePreview()">
+                            </div>
+                            <div class="form-group">
+                                <label>URL Foto Portada (Opcional)</label>
+                                <input type="text" id="brand-cover" placeholder="https://..." oninput="app.branding.updatePreview()">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Color Principal</label>
+                                    <input type="color" id="brand-color" oninput="app.branding.updatePreview()">
+                                </div>
+                                <div class="form-group">
+                                    <label>Tipografía</label>
+                                    <select id="brand-font" onchange="app.branding.updatePreview()">
+                                        <option value="Inter">Inter (Moderna)</option>
+                                        <option value="Merriweather">Merriweather (Clásica)</option>
+                                        <option value="Outfit">Outfit (Geométrica)</option>
+                                        <option value="Pacifico">Pacifico (Cursiva)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="btn-primary full-width" onclick="app.branding.save()" style="margin-bottom: 1rem;">Guardar Cambios</button>
+                            <button class="btn-secondary full-width" onclick="app.logout()" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">Cerrar Sesión</button>
+                        </div>
+                        <div class="branding-preview-container">
+                            <h3>Vista Previa en Vivo</h3>
+                            <div class="phone-mockup">
+                                <div id="live-preview" class="public-menu-preview">
+                                    <!-- Contenido inyectado dinámicamente -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: BANNER -->
+                <div id="sec-banner" class="admin-section">
+                    <div class="section-header">
+                        <h2>Banner Promocional</h2>
+                    </div>
+                    <div class="glass-card">
+                        <div class="form-group toggle-group">
+                            <label>Activar Banner</label>
+                            <label class="switch">
+                                <input type="checkbox" id="banner-active">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>Mensaje Promocional</label>
+                            <input type="text" id="banner-msg" placeholder="Ej: ¡2x1 en margaritas hoy!">
+                        </div>
+                        <div class="form-group">
+                            <label>Emoji (Opcional)</label>
+                            <input type="text" id="banner-emoji" placeholder="🍹">
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha de Vigencia (Opcional)</label>
+                            <input type="date" id="banner-date">
+                        </div>
+                        <button class="btn-primary" onclick="app.banner.save()">Guardar Banner</button>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: MI QR -->
+                <div id="sec-qr" class="admin-section">
+                    <div class="section-header">
+                        <h2>Mi QR</h2>
+                        <p>Comparte tu menú con el mundo</p>
+                    </div>
+                    <div class="qr-container glass-card">
+                        <div id="qrcode-render" class="qrcode-wrapper"></div>
+                        <div class="qr-actions">
+                            <button class="btn-secondary" onclick="app.qr.copyLink()"><i data-lucide="link"></i> Copiar Link</button>
+                            <button class="btn-secondary" onclick="app.qr.download()"><i data-lucide="download"></i> Descargar</button>
+                            <button class="btn-primary" onclick="app.qr.openMenu()"><i data-lucide="external-link"></i> Ver Menú</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Menú de Navegación Inferior (Bottom Nav) -->
+            <nav class="bottom-nav">
+                <button class="nav-item active" data-target="sec-productos" onclick="app.ui.switchTab('sec-productos')">
+                    <i data-lucide="coffee"></i>
+                    <span>Productos</span>
+                </button>
+                <button class="nav-item" data-target="sec-categorias" onclick="app.ui.switchTab('sec-categorias')">
+                    <i data-lucide="tag"></i>
+                    <span>Categorías</span>
+                </button>
+                <button class="nav-item" data-target="sec-branding" onclick="app.ui.switchTab('sec-branding')">
+                    <i data-lucide="palette"></i>
+                    <span>Branding</span>
+                </button>
+                <button class="nav-item" data-target="sec-banner" onclick="app.ui.switchTab('sec-banner')">
+                    <i data-lucide="megaphone"></i>
+                    <span>Banner</span>
+                </button>
+                <button class="nav-item" data-target="sec-qr" onclick="app.ui.switchTab('sec-qr')">
+                    <i data-lucide="qr-code"></i>
+                    <span>Mi QR</span>
+                </button>
+            </nav>
+        </section>
+
+        <!-- VISTA: MENÚ PÚBLICO (CLIENTE) -->
+        <section id="view-public" class="view public-view">
+            <!-- Renderizado dinámicamente -->
+        </section>
+
+    </div>
+
+    <!-- MODALES -->
+    <!-- Modal Producto -->
+    <div id="modal-producto" class="modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3>Nuevo Producto</h3>
+                <button class="close-btn" onclick="app.ui.closeModal('modal-producto')"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="prod-id">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="prod-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea id="prod-desc" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Precio</label>
+                        <input type="number" id="prod-price" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select id="prod-category"></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>URL Imagen</label>
+                    <input type="text" id="prod-image" placeholder="https://...">
+                </div>
+                <div class="form-group toggle-group">
+                    <label>Disponible</label>
+                    <label class="switch">
+                        <input type="checkbox" id="prod-avail" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="app.ui.closeModal('modal-producto')">Cancelar</button>
+                <button class="btn-primary" onclick="app.productos.save()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Categoría -->
+    <div id="modal-categoria" class="modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3>Nueva Categoría</h3>
+                <button class="close-btn" onclick="app.ui.closeModal('modal-categoria')"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="cat-id">
+                <div class="form-group">
+                    <label>Nombre de Categoría</label>
+                    <input type="text" id="cat-name" placeholder="Ej: Plato Fuerte" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="app.ui.closeModal('modal-categoria')">Cancelar</button>
+                <button class="btn-primary" onclick="app.categorias.save()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
