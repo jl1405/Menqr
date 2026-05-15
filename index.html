@@ -26,13 +26,13 @@
                     <i data-lucide="qr-code"></i>
                     <span>MenQR</span>
                 </div>
-                <button class="btn-primary" onclick="app.ui.switchView('auth')">Iniciar Sesión</button>
+                <button class="btn-primary" onclick="app.ui.switchView('auth'); app.auth.switchTab('login')">Iniciar Sesión</button>
             </nav>
             <main class="landing-main">
                 <div class="hero-section">
                     <h1 class="hero-title">El menú de tu restaurante, <span>más inteligente</span></h1>
                     <p class="hero-subtitle">Crea tu menú digital en minutos, genera tu código QR y ofrécele a tus clientes una experiencia moderna y sin contacto.</p>
-                    <button class="btn-primary hero-btn" onclick="app.ui.switchView('auth')">Empieza Gratis Ahora</button>
+                    <button class="btn-primary hero-btn" onclick="app.ui.switchView('auth'); app.auth.switchTab('register')">Empieza Gratis Ahora</button>
                 </div>
                 <div class="features-section">
                     <div class="feature-card">
@@ -65,10 +65,22 @@
                     <h1>MenQR</h1>
                     <p>Gestiona tu menú digital</p>
                 </div>
-                <div class="auth-form">
-                    <input type="email" id="auth-email" placeholder="Correo electrónico" required>
-                    <input type="password" id="auth-password" placeholder="Contraseña" required>
-                    <button class="btn-primary" onclick="app.login()">Entrar / Registrarse</button>
+                <div class="auth-tabs" style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: center;">
+                    <button class="auth-tab active" onclick="app.auth.switchTab('login')" style="flex:1; background: transparent; color: var(--brand-text); border-bottom: 2px solid var(--brand-primary); border-radius: 0;">Iniciar Sesión</button>
+                    <button class="auth-tab" onclick="app.auth.switchTab('register')" style="flex:1; background: transparent; color: var(--brand-text-muted); border-bottom: 2px solid transparent; border-radius: 0;">Crear Cuenta</button>
+                </div>
+                
+                <div id="form-login" class="auth-form" style="display: flex;">
+                    <input type="email" id="login-email" placeholder="Correo electrónico" required>
+                    <input type="password" id="login-password" placeholder="Contraseña" required>
+                    <button class="btn-primary" onclick="app.auth.login()">Entrar</button>
+                </div>
+                
+                <div id="form-register" class="auth-form" style="display: none;">
+                    <input type="email" id="register-email" placeholder="Correo electrónico" required>
+                    <input type="password" id="register-password" placeholder="Contraseña" required>
+                    <input type="password" id="register-password-confirm" placeholder="Confirmar contraseña" required>
+                    <button class="btn-primary" onclick="app.auth.register()">Registrarse</button>
                 </div>
             </div>
         </section>
@@ -118,12 +130,12 @@
                                 <input type="text" id="brand-desc" oninput="app.branding.updatePreview()">
                             </div>
                             <div class="form-group">
-                                <label>URL del Logo (Opcional)</label>
-                                <input type="text" id="brand-logo" placeholder="https://..." oninput="app.branding.updatePreview()">
+                                <label>Subir Logo (Opcional)</label>
+                                <input type="file" id="brand-logo" accept="image/*" onchange="app.branding.updatePreview()">
                             </div>
                             <div class="form-group">
-                                <label>URL Foto Portada (Opcional)</label>
-                                <input type="text" id="brand-cover" placeholder="https://..." oninput="app.branding.updatePreview()">
+                                <label>Subir Foto Portada (Opcional)</label>
+                                <input type="file" id="brand-cover" accept="image/*" onchange="app.branding.updatePreview()">
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
@@ -261,8 +273,8 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>URL Imagen</label>
-                    <input type="text" id="prod-image" placeholder="https://...">
+                    <label>Subir Imagen</label>
+                    <input type="file" id="prod-image" accept="image/*">
                 </div>
                 <div class="form-group toggle-group">
                     <label>Disponible</label>
@@ -301,6 +313,8 @@
     </div>
 
     <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
     <script src="app.js"></script>
     <script>
         lucide.createIcons();

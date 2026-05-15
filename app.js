@@ -12,79 +12,242 @@ const DEFAULT_BANNER = { active: false, msg: "¡Promo especial de apertura!", em
 const app = {
     state: {
         user: null,
+        restaurantId: null,
         categorias: [],
         productos: [],
         branding: { ...DEFAULT_BRANDING },
         banner: { ...DEFAULT_BANNER }
     },
 
-    init: () => {
-        app.loadData();
-        app.checkAuth();
-        // Check if accessing public menu via URL param ?menu=1
+    init: async () => {
+        // Check if accessing public menu via URL param ?menu=UUID
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('menu')) {
+        const menuId = urlParams.get('menu');
+        
+        if (menuId) {
             app.ui.switchView('public');
+            await app.loadPublicData(menuId);
+        } else {
+            await app.checkAuth();
+        }
+    },
+
+    loadPublicData: async (restaurantId) => {
+        try {
+            // Load restaurant config
+            const { data: restData, error: restErr } = await supabase
+                .from('restaurants')
+                .select('*')
+                .eq('id', restaurantId)
+                .single();
+
+            if (restErr || !restData) {
+                document.getElementById('view-public').innerHTML = '<p style="text-align:center; padding: 3rem;">Menú no encontrado.</p>';
+                return;
+            }
+
+            app.state.branding = {
+                name: restData.name || DEFAULT_BRANDING.name,
+                desc: restData.description || DEFAULT_BRANDING.desc,
+                logo: restData.logo_url || "",
+                cover: restData.cover_url || DEFAULT_BRANDING.cover,
+                color: restData.primary_color || DEFAULT_BRANDING.color,
+                font: restData.font_family || DEFAULT_BRANDING.font
+            };
+
+            app.state.banner = {
+                active: restData.banner_active,
+                msg: restData.banner_msg || "",
+                emoji: restData.banner_emoji || "",
+                date: restData.banner_date || ""
+            };
+
+            // Load Categories
+            const { data: catData } = await supabase
+                .from('categories')
+                .select('*')
+                .eq('restaurant_id', restaurantId)
+                .order('created_at', { ascending: true });
+            
+            if (catData) app.state.categorias = catData;
+
+            // Load Products
+            const { data: prodData } = await supabase
+                .from('products')
+                .select('*')
+                .eq('restaurant_id', restaurantId)
+                .order('created_at', { ascending: true });
+            
+            if (prodData) app.state.productos = prodData;
+
+            app.applyBranding();
             app.renderPublicMenu();
+        } catch (error) {
+            console.error("Error loading public data:", error);
         }
     },
 
-    loadData: () => {
-        const stored = localStorage.getItem('menqr_data');
-        if (stored) {
-            const data = JSON.parse(stored);
-            app.state.categorias = data.categorias || [];
-            app.state.productos = data.productos || [];
-            app.state.branding = { ...DEFAULT_BRANDING, ...data.branding };
-            app.state.banner = { ...DEFAULT_BANNER, ...data.banner };
-        }
-        app.applyBranding();
-    },
+    loadAdminData: async () => {
+        try {
+            // Fetch restaurant for current user
+            let { data: restData, error } = await supabase
+                .from('restaurants')
+                .select('*')
+                .eq('user_id', app.state.user.id)
+                .single();
 
-    saveData: () => {
-        localStorage.setItem('menqr_data', JSON.stringify({
-            categorias: app.state.categorias,
-            productos: app.state.productos,
-            branding: app.state.branding,
-            banner: app.state.banner
-        }));
-        app.renderAdminData();
-    },
+            // If no restaurant exists, create one
+            if (!restData) {
+                const { data: newRest, error: createErr } = await supabase
+                    .from('restaurants')
+                    .insert([{ user_id: app.state.user.id }])
+                    .select()
+                    .single();
+                
+                if (createErr) throw createErr;
+                restData = newRest;
+            }
 
-    login: () => {
-        const email = document.getElementById('auth-email').value;
-        const pass = document.getElementById('auth-password').value;
-        if (!email || !pass) return alert("Ingresa tus datos");
-        
-        // Mock login
-        app.state.user = { email, id: "restaurant-123" };
-        localStorage.setItem('menqr_auth', JSON.stringify(app.state.user));
-        
-        app.checkAuth();
-    },
+            app.state.restaurantId = restData.id;
 
-    checkAuth: () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('menu')) return; // In public mode
+            app.state.branding = {
+                name: restData.name || DEFAULT_BRANDING.name,
+                desc: restData.description || DEFAULT_BRANDING.desc,
+                logo: restData.logo_url || "",
+                cover: restData.cover_url || DEFAULT_BRANDING.cover,
+                color: restData.primary_color || DEFAULT_BRANDING.color,
+                font: restData.font_family || DEFAULT_BRANDING.font
+            };
 
-        const user = localStorage.getItem('menqr_auth');
-        if (user) {
-            app.state.user = JSON.parse(user);
-            app.ui.switchView('admin');
+            app.state.banner = {
+                active: restData.banner_active,
+                msg: restData.banner_msg || "",
+                emoji: restData.banner_emoji || "",
+                date: restData.banner_date || ""
+            };
+
+            // Fetch categories
+            const { data: catData } = await supabase
+                .from('categories')
+                .select('*')
+                .eq('restaurant_id', app.state.restaurantId)
+                .order('created_at', { ascending: true });
+            if (catData) app.state.categorias = catData;
+
+            // Fetch products
+            const { data: prodData } = await supabase
+                .from('products')
+                .select('*')
+                .eq('restaurant_id', app.state.restaurantId)
+                .order('created_at', { ascending: true });
+            if (prodData) app.state.productos = prodData;
+
+            app.applyBranding();
             app.renderAdminData();
             app.branding.populateForm();
             app.banner.populateForm();
             app.qr.generate();
             app.branding.updatePreview();
-        } else {
-            app.ui.switchView('landing');
+
+        } catch (error) {
+            console.error("Error loading admin data:", error);
+            alert("Hubo un error cargando tus datos.");
         }
     },
 
-    logout: () => {
-        app.state.user = null;
-        localStorage.removeItem('menqr_auth');
-        app.ui.switchView('landing');
+    auth: {
+        switchTab: (tab) => {
+            document.querySelectorAll('.auth-tab').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            document.querySelector(`.auth-tab[onclick*="${tab}"]`).classList.add('active');
+            document.getElementById(`form-${tab}`).style.display = 'flex';
+        },
+        login: async () => {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+            if (!email || !pass) return alert("Ingresa tus datos");
+            
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: pass
+                });
+
+                if (error) {
+                    return alert(error.message);
+                } else {
+                    app.state.user = data.user;
+                    app.ui.switchView('admin');
+                    await app.loadAdminData();
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        },
+        register: async () => {
+            const email = document.getElementById('register-email').value;
+            const pass = document.getElementById('register-password').value;
+            const passConfirm = document.getElementById('register-password-confirm').value;
+            
+            if (!email || !pass) return alert("Ingresa tus datos");
+            if (pass !== passConfirm) return alert("Las contraseñas no coinciden");
+            
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: pass
+                });
+                
+                if (error) {
+                    return alert(error.message);
+                }
+                alert("Cuenta creada. Redirigiendo al panel...");
+                if (data.user && data.session) {
+                    app.state.user = data.user;
+                    app.ui.switchView('admin');
+                    await app.loadAdminData();
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+    },
+
+    checkAuth: async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('menu')) return; // In public mode
+
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+            app.state.user = session.user;
+            app.ui.switchView('admin');
+            await app.loadAdminData();
+        } else {
+            app.ui.switchView('landing');
+        }
+
+        // Listen for auth state changes
+        supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_OUT') {
+                app.state.user = null;
+                app.ui.switchView('landing');
+            } else if (event === 'SIGNED_IN' && session) {
+                app.state.user = session.user;
+                // Avoid reloading if already on admin
+                if(!document.getElementById('view-admin').classList.contains('active')) {
+                    app.ui.switchView('admin');
+                    await app.loadAdminData();
+                }
+            }
+        });
+    },
+
+    logout: async () => {
+        await supabase.auth.signOut();
     },
 
     applyBranding: () => {
@@ -94,6 +257,32 @@ const app = {
         
         // Cargar fuente
         document.getElementById('theme-font').href = `https://fonts.googleapis.com/css2?family=${font}:wght@300;400;500;600;700&display=swap`;
+    },
+
+    uploadImage: async (fileInputId) => {
+        const input = document.getElementById(fileInputId);
+        if (!input || !input.files || input.files.length === 0) return null;
+
+        const file = input.files[0];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `${app.state.user.id}/${fileName}`;
+
+        const { data, error } = await supabase.storage
+            .from('menqr-media')
+            .upload(filePath, file);
+
+        if (error) {
+            console.error("Upload error:", error);
+            alert("Error subiendo la imagen");
+            return null;
+        }
+
+        const { data: publicUrlData } = supabase.storage
+            .from('menqr-media')
+            .getPublicUrl(filePath);
+
+        return publicUrlData.publicUrl;
     },
 
     // UI Helpers
@@ -118,28 +307,47 @@ const app = {
         closeModal: (id) => {
             document.getElementById(id).classList.remove('active');
             // Clear inputs inside modal
-            document.querySelectorAll(`#${id} input, #${id} textarea`).forEach(el => {
-                if(el.type !== 'checkbox') el.value = '';
+            document.querySelectorAll(`#${id} input:not([type="checkbox"]), #${id} textarea`).forEach(el => {
+                el.value = '';
+            });
+            // Reset files
+            document.querySelectorAll(`#${id} input[type="file"]`).forEach(el => {
+                el.value = '';
             });
         }
     },
 
     // Categorias Logic
     categorias: {
-        save: () => {
+        save: async () => {
             const name = document.getElementById('cat-name').value.trim();
             if (!name) return;
             
-            app.state.categorias.push({ id: Date.now().toString(), name });
-            app.saveData();
+            const { data, error } = await supabase
+                .from('categories')
+                .insert([{ restaurant_id: app.state.restaurantId, name: name }])
+                .select()
+                .single();
+            
+            if (error) {
+                return alert("Error guardando categoría");
+            }
+
+            app.state.categorias.push(data);
+            app.renderAdminData();
             app.ui.closeModal('modal-categoria');
         },
-        delete: (id) => {
+        delete: async (id) => {
             if(!confirm("¿Borrar categoría? Los productos de esta categoría quedarán sin categoría.")) return;
+            
+            const { error } = await supabase.from('categories').delete().eq('id', id);
+            
+            if(error) return alert("Error borrando categoría");
+
             app.state.categorias = app.state.categorias.filter(c => c.id !== id);
-            // Reset category for products
-            app.state.productos = app.state.productos.map(p => p.categoryId === id ? { ...p, categoryId: null } : p);
-            app.saveData();
+            // Reset category for products locally (DB does this via ON DELETE SET NULL)
+            app.state.productos = app.state.productos.map(p => p.category_id === id ? { ...p, category_id: null } : p);
+            app.renderAdminData();
         }
     },
 
@@ -150,36 +358,65 @@ const app = {
             select.innerHTML = '<option value="">Sin Categoría</option>' + 
                 app.state.categorias.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
         },
-        save: () => {
+        save: async () => {
             const name = document.getElementById('prod-name').value.trim();
             const price = document.getElementById('prod-price').value;
             if (!name || !price) return alert("Nombre y precio son requeridos");
 
-            const product = {
-                id: Date.now().toString(),
-                name,
-                desc: document.getElementById('prod-desc').value.trim(),
+            // Upload image if present
+            let imageUrl = await app.uploadImage('prod-image');
+
+            const categoryId = document.getElementById('prod-category').value;
+
+            const productData = {
+                restaurant_id: app.state.restaurantId,
+                name: name,
+                description: document.getElementById('prod-desc').value.trim(),
                 price: parseFloat(price),
-                categoryId: document.getElementById('prod-category').value,
-                image: document.getElementById('prod-image').value.trim(),
+                category_id: categoryId ? categoryId : null,
                 available: document.getElementById('prod-avail').checked
             };
 
-            app.state.productos.push(product);
-            app.saveData();
+            if (imageUrl) productData.image_url = imageUrl;
+
+            const { data, error } = await supabase
+                .from('products')
+                .insert([productData])
+                .select()
+                .single();
+
+            if (error) return alert("Error guardando producto: " + error.message);
+
+            app.state.productos.push(data);
+            app.renderAdminData();
             app.ui.closeModal('modal-producto');
         },
-        toggleAvailability: (id) => {
+        toggleAvailability: async (id) => {
             const p = app.state.productos.find(p => p.id === id);
             if(p) {
-                p.available = !p.available;
-                app.saveData();
+                const newAvail = !p.available;
+                const { error } = await supabase
+                    .from('products')
+                    .update({ available: newAvail })
+                    .eq('id', id);
+
+                if(!error) {
+                    p.available = newAvail;
+                    app.renderAdminData();
+                } else {
+                    alert("Error actualizando disponibilidad");
+                }
             }
         },
-        delete: (id) => {
+        delete: async (id) => {
             if(!confirm("¿Borrar producto?")) return;
+            
+            const { error } = await supabase.from('products').delete().eq('id', id);
+            
+            if(error) return alert("Error borrando producto");
+
             app.state.productos = app.state.productos.filter(p => p.id !== id);
-            app.saveData();
+            app.renderAdminData();
         }
     },
 
@@ -189,22 +426,48 @@ const app = {
             const b = app.state.branding;
             document.getElementById('brand-name').value = b.name;
             document.getElementById('brand-desc').value = b.desc;
-            document.getElementById('brand-logo').value = b.logo;
-            document.getElementById('brand-cover').value = b.cover;
             document.getElementById('brand-color').value = b.color;
             document.getElementById('brand-font').value = b.font;
+            // File inputs cannot be populated with URLs
         },
-        save: () => {
-            app.state.branding = {
-                name: document.getElementById('brand-name').value,
-                desc: document.getElementById('brand-desc').value,
-                logo: document.getElementById('brand-logo').value,
-                cover: document.getElementById('brand-cover').value,
-                color: document.getElementById('brand-color').value,
-                font: document.getElementById('brand-font').value
+        save: async () => {
+            const name = document.getElementById('brand-name').value;
+            const desc = document.getElementById('brand-desc').value;
+            const color = document.getElementById('brand-color').value;
+            const font = document.getElementById('brand-font').value;
+
+            let logoUrl = await app.uploadImage('brand-logo');
+            let coverUrl = await app.uploadImage('brand-cover');
+
+            const updateData = {
+                name: name,
+                description: desc,
+                primary_color: color,
+                font_family: font
             };
+
+            if (logoUrl) updateData.logo_url = logoUrl;
+            if (coverUrl) updateData.cover_url = coverUrl;
+
+            const { error } = await supabase
+                .from('restaurants')
+                .update(updateData)
+                .eq('id', app.state.restaurantId);
+
+            if(error) return alert("Error guardando branding");
+
+            app.state.branding = {
+                ...app.state.branding,
+                name: name,
+                desc: desc,
+                color: color,
+                font: font
+            };
+            if(logoUrl) app.state.branding.logo = logoUrl;
+            if(coverUrl) app.state.branding.cover = coverUrl;
+
             app.applyBranding();
-            app.saveData();
+            app.branding.updatePreview();
             alert("Branding guardado");
         },
         updatePreview: () => {
@@ -215,8 +478,8 @@ const app = {
             const tempBrand = {
                 name: document.getElementById('brand-name').value || 'Restaurante',
                 desc: document.getElementById('brand-desc').value || 'Descripción',
-                logo: document.getElementById('brand-logo').value,
-                cover: document.getElementById('brand-cover').value,
+                logo: app.state.branding.logo, // keep existing as file inputs aren't immediate previews easily
+                cover: app.state.branding.cover,
                 color: document.getElementById('brand-color').value || '#8a2be2'
             };
             
@@ -234,14 +497,25 @@ const app = {
             document.getElementById('banner-emoji').value = b.emoji;
             document.getElementById('banner-date').value = b.date;
         },
-        save: () => {
-            app.state.banner = {
-                active: document.getElementById('banner-active').checked,
-                msg: document.getElementById('banner-msg').value,
-                emoji: document.getElementById('banner-emoji').value,
-                date: document.getElementById('banner-date').value
-            };
-            app.saveData();
+        save: async () => {
+            const active = document.getElementById('banner-active').checked;
+            const msg = document.getElementById('banner-msg').value;
+            const emoji = document.getElementById('banner-emoji').value;
+            const date = document.getElementById('banner-date').value;
+
+            const { error } = await supabase
+                .from('restaurants')
+                .update({
+                    banner_active: active,
+                    banner_msg: msg,
+                    banner_emoji: emoji,
+                    banner_date: date || null
+                })
+                .eq('id', app.state.restaurantId);
+
+            if (error) return alert("Error guardando banner");
+
+            app.state.banner = { active, msg, emoji, date };
             app.branding.updatePreview();
             alert("Banner guardado");
         }
@@ -250,12 +524,14 @@ const app = {
     qr: {
         getLink: () => {
             const url = new URL(window.location.href);
-            url.searchParams.set('menu', '1');
+            // Clear existing params just in case
+            url.search = '';
+            url.searchParams.set('menu', app.state.restaurantId);
             return url.href;
         },
         generate: () => {
             const container = document.getElementById('qrcode-render');
-            if(!container) return;
+            if(!container || !app.state.restaurantId) return;
             container.innerHTML = ''; // clear
             new QRCode(container, {
                 text: app.qr.getLink(),
@@ -300,12 +576,12 @@ const app = {
             // Render Productos
             const prodList = document.getElementById('productos-list');
             prodList.innerHTML = app.state.productos.length ? app.state.productos.map(p => {
-                const cat = app.state.categorias.find(c => c.id === p.categoryId);
+                const cat = app.state.categorias.find(c => c.id === p.category_id);
                 const placeholder = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="%23aaa"><rect width="50" height="50" fill="%23eee"/><text x="25" y="30" font-family="sans-serif" font-size="12" text-anchor="middle">Img</text></svg>';
                 return `
                 <div class="list-item" style="${p.available ? '' : 'opacity: 0.5; filter: grayscale(1);'}">
                     <div class="item-info">
-                        <img src="${p.image || placeholder}" class="item-img" alt="${p.name}" onerror="this.src='${placeholder}'">
+                        <img src="${p.image_url || placeholder}" class="item-img" alt="${p.name}" onerror="this.src='${placeholder}'">
                         <div>
                             <h4 style="margin:0">${p.name}</h4>
                             <small style="opacity:0.7">${cat ? cat.name : 'Sin categoría'} - $${p.price.toFixed(2)}</small>
@@ -351,10 +627,10 @@ const app = {
                 const placeholder = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="%23aaa"><rect width="80" height="80" fill="%23eee"/><text x="40" y="45" font-family="sans-serif" font-size="12" text-anchor="middle">Img</text></svg>';
                 return `
                 <div class="pub-product-card">
-                    ${p.image ? `<img src="${p.image}" class="pub-product-img" onerror="this.src='${placeholder}'">` : `<img src="${placeholder}" class="pub-product-img">`}
+                    ${p.image_url ? `<img src="${p.image_url}" class="pub-product-img" onerror="this.src='${placeholder}'">` : `<img src="${placeholder}" class="pub-product-img">`}
                     <div class="pub-product-info">
                         <h4>${p.name}</h4>
-                        <p>${p.desc}</p>
+                        <p>${p.description || p.desc || ''}</p>
                         <div class="pub-product-price">$${p.price.toFixed(2)}</div>
                     </div>
                 </div>
