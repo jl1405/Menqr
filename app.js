@@ -467,6 +467,22 @@ const app = {
 
     // Productos Logic
     productos: {
+        filterAdminCategory: (categoryId, btn) => {
+            const container = document.getElementById('admin-category-filter');
+            if(!container) return;
+            const chips = container.querySelectorAll('.cat-chip');
+            chips.forEach(c => c.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+
+            const cards = document.querySelectorAll('.admin-product-card');
+            cards.forEach(card => {
+                if(categoryId === 'all' || card.dataset.category === categoryId) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        },
         addAddonRow: (name = '', price = '', available = true) => {
             const container = document.getElementById('prod-addons-container');
             const row = document.createElement('div');
@@ -765,13 +781,20 @@ const app = {
                 </div>
             `).join('') : '<p style="text-align:center; padding: 2rem 0; opacity: 0.5;">No hay categorías</p>';
 
+            // Render Admin Categories Filter
+            const adminCatFilter = document.getElementById('admin-category-filter');
+            if(adminCatFilter) {
+                adminCatFilter.innerHTML = '<div class="cat-chip active" onclick="app.productos.filterAdminCategory(\'all\', this)">Todo</div>' + 
+                    app.state.categorias.map(c => `<div class="cat-chip" onclick="app.productos.filterAdminCategory('${c.id}', this)">${c.name}</div>`).join('');
+            }
+
             // Render Productos
             const prodList = document.getElementById('productos-list');
             prodList.innerHTML = app.state.productos.length ? app.state.productos.map(p => {
                 const cat = app.state.categorias.find(c => c.id === p.category_id);
                 const placeholder = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22 fill=%22%23aaa%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%23eee%22/%3E%3Ctext x=%2225%22 y=%2230%22 font-family=%22sans-serif%22 font-size=%2212%22 text-anchor=%22middle%22%3EImg%3C/text%3E%3C/svg%3E";
                 return `
-                <div class="list-item" style="${p.available ? '' : 'opacity: 0.5; filter: grayscale(1);'}">
+                <div class="list-item admin-product-card" data-category="${p.category_id || 'unassigned'}" style="${p.available ? '' : 'opacity: 0.5; filter: grayscale(1);'}">
                     <div class="item-info">
                         <img src="${p.image_url || placeholder}" class="item-img" alt="${p.name}" onerror="this.src='${placeholder}'">
                         <div>

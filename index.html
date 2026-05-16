@@ -102,6 +102,9 @@
                         <h2>Productos</h2>
                         <button class="btn-primary" onclick="app.ui.showModal('modal-producto')"><i data-lucide="plus"></i> Añadir</button>
                     </div>
+                    <div id="admin-category-filter" class="public-categories" style="margin-bottom: 1.5rem; justify-content: flex-start; overflow-x: auto;">
+                        <!-- Category chips injected by JS -->
+                    </div>
                     <div id="productos-list" class="items-list">
                         <!-- Lista de productos dinámica -->
                     </div>
@@ -162,9 +165,12 @@
                                 </div>
                             </div>
                             <button class="btn-primary full-width" onclick="app.branding.save()" style="margin-bottom: 1rem;">Guardar Cambios</button>
-                            <button class="btn-secondary full-width" onclick="app.logout()" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">Cerrar Sesión</button>
+                            <button class="btn-secondary full-width" onclick="app.auth.logout()" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">Cerrar Sesión</button>
                         </div>
                         <div class="branding-preview-container">
+                            <div class="mobile-preview-hint">
+                                <i data-lucide="chevron-down" style="vertical-align: middle;"></i> Desliza hacia abajo para ver la previsualización
+                            </div>
                             <h3>Vista Previa en Vivo</h3>
                             <div class="phone-mockup">
                                 <div id="live-preview" class="public-menu-preview">
