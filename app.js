@@ -601,7 +601,7 @@ const app = {
             const prodList = document.getElementById('productos-list');
             prodList.innerHTML = app.state.productos.length ? app.state.productos.map(p => {
                 const cat = app.state.categorias.find(c => c.id === p.category_id);
-                const placeholder = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="%23aaa"><rect width="50" height="50" fill="%23eee"/><text x="25" y="30" font-family="sans-serif" font-size="12" text-anchor="middle">Img</text></svg>';
+                const placeholder = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22 fill=%22%23aaa%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%23eee%22/%3E%3Ctext x=%2225%22 y=%2230%22 font-family=%22sans-serif%22 font-size=%2212%22 text-anchor=%22middle%22%3EImg%3C/text%3E%3C/svg%3E";
                 return `
                 <div class="list-item" style="${p.available ? '' : 'opacity: 0.5; filter: grayscale(1);'}">
                     <div class="item-info">
@@ -648,7 +648,7 @@ const app = {
         // Productos UI
         let prodHTML = '<div class="public-products">' + 
             app.state.productos.filter(p => p.available).map(p => {
-                const placeholder = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="%23aaa"><rect width="80" height="80" fill="%23eee"/><text x="40" y="45" font-family="sans-serif" font-size="12" text-anchor="middle">Img</text></svg>';
+                const placeholder = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22 fill=%22%23aaa%22%3E%3Crect width=%2280%22 height=%2280%22 fill=%22%23eee%22/%3E%3Ctext x=%2240%22 y=%2245%22 font-family=%22sans-serif%22 font-size=%2212%22 text-anchor=%22middle%22%3EImg%3C/text%3E%3C/svg%3E";
                 return `
                 <div class="pub-product-card">
                     ${p.image_url ? `<img src="${p.image_url}" class="pub-product-img" onerror="this.src='${placeholder}'">` : `<img src="${placeholder}" class="pub-product-img">`}
