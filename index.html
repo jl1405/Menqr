@@ -2,7 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0ea5e9">
+    <link rel="manifest" href="manifest.json">
     <title>MenQR - Gestor de Menús Digitales</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -121,8 +123,10 @@
                 <!-- SECCIÓN: BRANDING -->
                 <div id="sec-branding" class="admin-section">
                     <div class="section-header">
-                        <h2>Branding</h2>
-                        <p>Personaliza la identidad de tu restaurante</p>
+                        <div>
+                            <h2 style="margin: 0; margin-bottom: 0.2rem;">Branding</h2>
+                            <p style="margin: 0; opacity: 0.7; font-size: 0.9rem;">Personaliza la identidad de tu restaurante</p>
+                        </div>
                     </div>
                     <div class="branding-container">
                         <div class="branding-form glass-card">
@@ -203,8 +207,10 @@
                 <!-- SECCIÓN: MI QR -->
                 <div id="sec-qr" class="admin-section">
                     <div class="section-header">
-                        <h2>Mi QR</h2>
-                        <p>Comparte tu menú con el mundo</p>
+                        <div>
+                            <h2 style="margin: 0; margin-bottom: 0.2rem;">Mi QR</h2>
+                            <p style="margin: 0; opacity: 0.7; font-size: 0.9rem;">Comparte tu menú con el mundo</p>
+                        </div>
                     </div>
                     <div class="qr-container glass-card">
                         <div id="qrcode-render" class="qrcode-wrapper"></div>

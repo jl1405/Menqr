@@ -21,6 +21,13 @@ const app = {
     },
 
     init: async () => {
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(() => console.log('Service Worker Registered'))
+                .catch(err => console.log('Service Worker Failed', err));
+        }
+
         // Check if accessing public menu via URL param ?menu=UUID
         const urlParams = new URLSearchParams(window.location.search);
         const menuId = urlParams.get('menu');
@@ -287,8 +294,16 @@ const app = {
 
     applyBranding: () => {
         const { color, font } = app.state.branding;
-        document.documentElement.style.setProperty('--brand-primary', color);
-        document.documentElement.style.setProperty('--brand-font', `"${font}", sans-serif`);
+        
+        const applyTo = (el) => {
+            if(!el) return;
+            el.style.setProperty('--brand-primary', color);
+            el.style.setProperty('--brand-font', `"${font}", sans-serif`);
+            el.style.fontFamily = `var(--brand-font)`;
+        };
+
+        applyTo(document.getElementById('view-public'));
+        applyTo(document.getElementById('live-preview'));
         
         // Cargar fuente
         document.getElementById('theme-font').href = `https://fonts.googleapis.com/css2?family=${font}:wght@300;400;500;600;700&display=swap`;
@@ -659,6 +674,10 @@ const app = {
             const html = app.generatePublicHTML(tempBrand, app.state.banner);
             preview.innerHTML = html;
             preview.style.setProperty('--brand-primary', tempBrand.color);
+            // We use the real brand font for preview since font inputs might not update instantly, 
+            // but we can use app.state.branding.font or a temp font if implemented.
+            preview.style.setProperty('--brand-font', `"${app.state.branding.font}", sans-serif`);
+            preview.style.fontFamily = `var(--brand-font)`;
         }
     },
 
@@ -793,16 +812,16 @@ const app = {
         }
 
         // Categorias UI
-        let catHTML = '<div class="public-categories"><div class="cat-chip active">Todo</div>' + 
-            app.state.categorias.map(c => `<div class="cat-chip">${c.name}</div>`).join('') + 
+        let catHTML = '<div class="public-categories"><div class="cat-chip active" onclick="app.public.filterCategory(\'all\', this)">Todo</div>' + 
+            app.state.categorias.map(c => `<div class="cat-chip" onclick="app.public.filterCategory('${c.id}', this)">${c.name}</div>`).join('') + 
             '</div>';
 
         // Productos UI
-        let prodHTML = '<div class="public-products">' + 
+        let prodHTML = '<div class="public-products" id="public-products-container">' + 
             app.state.productos.filter(p => p.available).map(p => {
                 const placeholder = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22 fill=%22%23aaa%22%3E%3Crect width=%2280%22 height=%2280%22 fill=%22%23eee%22/%3E%3Ctext x=%2240%22 y=%2245%22 font-family=%22sans-serif%22 font-size=%2212%22 text-anchor=%22middle%22%3EImg%3C/text%3E%3C/svg%3E";
                 return `
-                <div class="pub-product-card" onclick="app.public.openProduct('${p.id}')" style="cursor: pointer;">
+                <div class="pub-product-card" data-category="${p.category_id || 'unassigned'}" onclick="app.public.openProduct('${p.id}')" style="cursor: pointer;">
                     ${p.image_url ? `<img src="${p.image_url}" class="pub-product-img" onerror="this.src='${placeholder}'">` : `<img src="${placeholder}" class="pub-product-img">`}
                     <div class="pub-product-info">
                         <h4>${p.name}</h4>
@@ -872,6 +891,40 @@ const app = {
         },
         closeProduct: () => {
             document.getElementById('modal-public-product').classList.remove('active');
+        },
+        filterCategory: (categoryId, btn) => {
+            // Update active chip
+            const chips = document.querySelectorAll('.cat-chip');
+            chips.forEach(c => c.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+
+            // Filter products
+            const cards = document.querySelectorAll('.pub-product-card');
+            let visibleCount = 0;
+            
+            cards.forEach(card => {
+                if(categoryId === 'all' || card.dataset.category === categoryId) {
+                    card.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Handle empty state message
+            let emptyMsg = document.getElementById('pub-empty-msg');
+            if (visibleCount === 0) {
+                if (!emptyMsg) {
+                    emptyMsg = document.createElement('p');
+                    emptyMsg.id = 'pub-empty-msg';
+                    emptyMsg.style = 'text-align:center; padding: 2rem; opacity:0.6; width: 100%;';
+                    emptyMsg.textContent = 'No hay productos en esta categoría.';
+                    document.getElementById('public-products-container').appendChild(emptyMsg);
+                }
+                emptyMsg.style.display = 'block';
+            } else if (emptyMsg) {
+                emptyMsg.style.display = 'none';
+            }
         }
     }
 };
