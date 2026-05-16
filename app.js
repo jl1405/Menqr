@@ -238,6 +238,16 @@ const app = {
                 console.error(error);
                 app.auth.showMessage("Error inesperado", "error");
             }
+        },
+        logout: async () => {
+            const { error } = await supabaseClient.auth.signOut();
+            if (error) {
+                alert("Error al cerrar sesión: " + error.message);
+            } else {
+                app.state.user = null;
+                app.state.restaurantId = null;
+                app.ui.switchView('landing');
+            }
         }
     },
 
