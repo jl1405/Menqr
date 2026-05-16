@@ -16,7 +16,8 @@ const app = {
         categorias: [],
         productos: [],
         branding: { ...DEFAULT_BRANDING },
-        banner: { ...DEFAULT_BANNER }
+        banner: { ...DEFAULT_BANNER },
+        pendingUploads: {}
     },
 
     init: async () => {
@@ -139,7 +140,7 @@ const app = {
                 .from('products')
                 .select('*')
                 .eq('restaurant_id', app.state.restaurantId)
-                .order('created_at', { ascending: true });
+                .order('created_at', { ascending: false });
             if (prodData) app.state.productos = prodData;
 
             app.applyBranding();
@@ -287,8 +288,16 @@ const app = {
         const input = document.getElementById(fileInputId);
         if (!input || !input.files || input.files.length === 0) return null;
 
-        const file = input.files[0];
-        const fileExt = file.name.split('.').pop();
+        let file = input.files[0];
+        let fileExt = file.name.split('.').pop();
+        
+        // If we have a cropped blob for this input, use it instead
+        if (app.state.pendingUploads && app.state.pendingUploads[fileInputId]) {
+            file = app.state.pendingUploads[fileInputId];
+            fileExt = 'png';
+            delete app.state.pendingUploads[fileInputId]; // clear from memory
+        }
+
         const fileName = `${Math.random()}.${fileExt}`;
         const filePath = `${app.state.user.id}/${fileName}`;
 
@@ -326,7 +335,12 @@ const app = {
         },
         showModal: (id) => {
             document.getElementById(id).classList.add('active');
-            if(id === 'modal-producto') app.productos.populateCategorySelect();
+            if(id === 'modal-producto') {
+                app.productos.populateCategorySelect();
+                document.querySelector('#modal-producto h3').textContent = 'Nuevo Producto';
+                document.getElementById('prod-id').value = '';
+                document.getElementById('prod-addons-container').innerHTML = '';
+            }
         },
         closeModal: (id) => {
             document.getElementById(id).classList.remove('active');
@@ -338,6 +352,57 @@ const app = {
             document.querySelectorAll(`#${id} input[type="file"]`).forEach(el => {
                 el.value = '';
             });
+        }
+    },
+
+    // Image Cropper Logic
+    cropper: {
+        instance: null,
+        currentInputId: null,
+        open: (inputEl, ratio) => {
+            if (!inputEl.files || inputEl.files.length === 0) return;
+            const file = inputEl.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                app.cropper.currentInputId = inputEl.id;
+                document.getElementById('cropper-image').src = e.target.result;
+                app.ui.showModal('modal-cropper');
+                
+                if (app.cropper.instance) {
+                    app.cropper.instance.destroy();
+                }
+                
+                const imageEl = document.getElementById('cropper-image');
+                // Give the modal time to display before initializing cropper to calculate dims properly
+                setTimeout(() => {
+                    app.cropper.instance = new Cropper(imageEl, {
+                        aspectRatio: ratio,
+                        viewMode: 1,
+                        background: false
+                    });
+                }, 100);
+            };
+            reader.readAsDataURL(file);
+        },
+        cancel: () => {
+            app.ui.closeModal('modal-cropper');
+            if (app.cropper.currentInputId) {
+                document.getElementById(app.cropper.currentInputId).value = ''; // Reset file input
+                app.cropper.currentInputId = null;
+            }
+        },
+        confirm: () => {
+            if (!app.cropper.instance) return;
+            app.cropper.instance.getCroppedCanvas({
+                maxWidth: 1024,
+                maxHeight: 1024
+            }).toBlob((blob) => {
+                if(app.cropper.currentInputId) {
+                    app.state.pendingUploads[app.cropper.currentInputId] = blob;
+                    app.ui.closeModal('modal-cropper');
+                    app.cropper.currentInputId = null;
+                }
+            }, 'image/png', 0.9);
         }
     },
 
@@ -377,6 +442,26 @@ const app = {
 
     // Productos Logic
     productos: {
+        addAddonRow: (name = '', price = '', available = true) => {
+            const container = document.getElementById('prod-addons-container');
+            const row = document.createElement('div');
+            row.className = 'addon-row';
+            row.style = 'display:flex; gap:0.5rem; align-items:center; background: var(--brand-bg); padding: 0.5rem; border-radius: 8px; border: 1px solid var(--sys-border);';
+            row.innerHTML = `
+                <input type="text" class="addon-name" placeholder="Nombre" value="${name}" style="flex:2; padding:0.3rem;" required>
+                <input type="number" class="addon-price" placeholder="Precio ($0)" value="${price}" step="0.01" style="flex:1; padding:0.3rem;">
+                <label class="switch" style="transform: scale(0.6); margin:0;">
+                    <input type="checkbox" class="addon-avail" ${available ? 'checked' : ''}>
+                    <span class="slider round"></span>
+                </label>
+                <button type="button" class="icon-btn danger" style="padding:0.3rem;" onclick="app.productos.removeAddonRow(this)"><i data-lucide="trash-2"></i></button>
+            `;
+            container.appendChild(row);
+            if(window.lucide) lucide.createIcons();
+        },
+        removeAddonRow: (btn) => {
+            btn.closest('.addon-row').remove();
+        },
         populateCategorySelect: () => {
             const select = document.getElementById('prod-category');
             select.innerHTML = '<option value="">Sin Categoría</option>' + 
@@ -390,7 +475,22 @@ const app = {
             // Upload image if present
             let imageUrl = await app.uploadImage('prod-image');
 
+            const prodId = document.getElementById('prod-id').value;
             const categoryId = document.getElementById('prod-category').value;
+
+            // Collect Addons
+            const addonsContainer = document.getElementById('prod-addons-container');
+            const addonRows = addonsContainer.querySelectorAll('.addon-row');
+            const addons = [];
+            addonRows.forEach(row => {
+                const aName = row.querySelector('.addon-name').value.trim();
+                const aPriceStr = row.querySelector('.addon-price').value;
+                const aPrice = aPriceStr ? parseFloat(aPriceStr) : 0;
+                const aAvail = row.querySelector('.addon-avail').checked;
+                if (aName) {
+                    addons.push({ name: aName, price: aPrice, available: aAvail });
+                }
+            });
 
             const productData = {
                 restaurant_id: app.state.restaurantId,
@@ -398,22 +498,61 @@ const app = {
                 description: document.getElementById('prod-desc').value.trim(),
                 price: parseFloat(price),
                 category_id: categoryId ? categoryId : null,
-                available: document.getElementById('prod-avail').checked
+                available: document.getElementById('prod-avail').checked,
+                addons: addons
             };
 
             if (imageUrl) productData.image_url = imageUrl;
 
-            const { data, error } = await supabaseClient
-                .from('products')
-                .insert([productData])
-                .select()
-                .single();
+            if (prodId) {
+                // UPDATE
+                const { error } = await supabaseClient
+                    .from('products')
+                    .update(productData)
+                    .eq('id', prodId);
+                
+                if (error) return alert("Error actualizando producto: " + error.message);
+                
+                // Update local state
+                const index = app.state.productos.findIndex(p => p.id === prodId);
+                if (index !== -1) {
+                    app.state.productos[index] = { ...app.state.productos[index], ...productData };
+                }
+            } else {
+                // INSERT
+                const { data, error } = await supabaseClient
+                    .from('products')
+                    .insert([productData])
+                    .select()
+                    .single();
 
-            if (error) return alert("Error guardando producto: " + error.message);
+                if (error) return alert("Error guardando producto: " + error.message);
+                app.state.productos.push(data);
+            }
 
-            app.state.productos.push(data);
             app.renderAdminData();
             app.ui.closeModal('modal-producto');
+        },
+        edit: (id) => {
+            const p = app.state.productos.find(x => x.id === id);
+            if (!p) return;
+            
+            // Populate modal
+            app.productos.populateCategorySelect();
+            document.getElementById('prod-id').value = p.id;
+            document.getElementById('prod-name').value = p.name;
+            document.getElementById('prod-desc').value = p.description || '';
+            document.getElementById('prod-price').value = p.price;
+            document.getElementById('prod-category').value = p.category_id || '';
+            document.getElementById('prod-avail').checked = p.available;
+            
+            document.getElementById('prod-addons-container').innerHTML = '';
+            if (p.addons && p.addons.length > 0) {
+                p.addons.forEach(a => app.productos.addAddonRow(a.name, a.price, a.available));
+            }
+            
+            document.querySelector('#modal-producto h3').textContent = 'Editar Producto';
+            document.getElementById('modal-producto').classList.add('active');
         },
         toggleAvailability: async (id) => {
             const p = app.state.productos.find(p => p.id === id);
@@ -616,10 +755,13 @@ const app = {
                             <input type="checkbox" ${p.available ? 'checked' : ''} onchange="app.productos.toggleAvailability('${p.id}')">
                             <span class="slider round"></span>
                         </label>
+                        <button class="icon-btn" onclick="app.productos.edit('${p.id}')"><i data-lucide="edit-2"></i></button>
                         <button class="icon-btn danger" onclick="app.productos.delete('${p.id}')"><i data-lucide="trash-2"></i></button>
                     </div>
                 </div>
             `}).join('') : '<p style="text-align:center; padding: 2rem 0; opacity: 0.5;">No hay productos</p>';
+
+
 
             if (window.lucide) lucide.createIcons();
         }
@@ -650,7 +792,7 @@ const app = {
             app.state.productos.filter(p => p.available).map(p => {
                 const placeholder = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22 fill=%22%23aaa%22%3E%3Crect width=%2280%22 height=%2280%22 fill=%22%23eee%22/%3E%3Ctext x=%2240%22 y=%2245%22 font-family=%22sans-serif%22 font-size=%2212%22 text-anchor=%22middle%22%3EImg%3C/text%3E%3C/svg%3E";
                 return `
-                <div class="pub-product-card">
+                <div class="pub-product-card" onclick="app.public.openProduct('${p.id}')" style="cursor: pointer;">
                     ${p.image_url ? `<img src="${p.image_url}" class="pub-product-img" onerror="this.src='${placeholder}'">` : `<img src="${placeholder}" class="pub-product-img">`}
                     <div class="pub-product-info">
                         <h4>${p.name}</h4>
@@ -684,6 +826,43 @@ const app = {
     renderPublicMenu: () => {
         const container = document.getElementById('view-public');
         container.innerHTML = app.generatePublicHTML(app.state.branding, app.state.banner);
+    },
+
+    public: {
+        openProduct: (id) => {
+            const p = app.state.productos.find(x => x.id === id);
+            if(!p) return;
+
+            const placeholder = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22 fill=%22%23aaa%22%3E%3Crect width=%2280%22 height=%2280%22 fill=%22%23eee%22/%3E%3Ctext x=%2240%22 y=%2245%22 font-family=%22sans-serif%22 font-size=%2212%22 text-anchor=%22middle%22%3EImg%3C/text%3E%3C/svg%3E";
+            
+            document.getElementById('pub-modal-img').src = p.image_url || placeholder;
+            document.getElementById('pub-modal-name').textContent = p.name;
+            document.getElementById('pub-modal-desc').textContent = p.description || '';
+            document.getElementById('pub-modal-price').textContent = '$' + p.price.toFixed(2);
+
+            const addonsContainer = document.getElementById('pub-modal-addons-container');
+            const addonsList = document.getElementById('pub-modal-addons-list');
+            
+            const activeAddons = (p.addons || []).filter(a => a.available);
+
+            if(activeAddons.length > 0) {
+                addonsContainer.style.display = 'block';
+                addonsList.innerHTML = activeAddons.map(a => `
+                    <div class="pub-addon-item">
+                        <span class="pub-addon-name">+ ${a.name}</span>
+                        <span class="pub-addon-price">${a.price > 0 ? '$' + a.price.toFixed(2) : 'Gratis'}</span>
+                    </div>
+                `).join('');
+            } else {
+                addonsContainer.style.display = 'none';
+                addonsList.innerHTML = '';
+            }
+
+            document.getElementById('modal-public-product').classList.add('active');
+        },
+        closeProduct: () => {
+            document.getElementById('modal-public-product').classList.remove('active');
+        }
     }
 };
 
