@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -9,7 +10,8 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link id="theme-font" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link id="theme-font" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Cropper.js -->
@@ -19,6 +21,7 @@
     <!-- Styles -->
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
     <!-- APP CONTAINER -->
@@ -30,24 +33,30 @@
                     <i data-lucide="qr-code"></i>
                     <span>MenQR</span>
                 </div>
-                <button class="btn-primary" onclick="app.ui.switchView('auth'); app.auth.switchTab('login')">Iniciar Sesión</button>
+                <button class="btn-primary" onclick="app.ui.switchView('auth'); app.auth.switchTab('login')">Iniciar
+                    Sesión</button>
             </nav>
             <main class="landing-main">
                 <div class="hero-section">
                     <h1 class="hero-title">El menú de tu restaurante, <span>más inteligente</span></h1>
-                    <p class="hero-subtitle">Crea tu menú digital en minutos, genera tu código QR y ofrécele a tus clientes una experiencia moderna y sin contacto.</p>
-                    <button class="btn-primary hero-btn" onclick="app.ui.switchView('auth'); app.auth.switchTab('register')">Empieza Gratis Ahora</button>
+                    <p class="hero-subtitle">Crea tu menú digital en minutos, genera tu código QR y ofrécele a tus
+                        clientes una experiencia moderna y sin contacto.</p>
+                    <button class="btn-primary hero-btn"
+                        onclick="app.ui.switchView('auth'); app.auth.switchTab('register')">Empieza Gratis
+                        Ahora</button>
                 </div>
                 <div class="features-section">
                     <div class="feature-card">
                         <div class="feature-icon"><i data-lucide="smartphone"></i></div>
                         <h3>Diseño Móvil Perfecto</h3>
-                        <p>Tu menú se verá increíble en cualquier dispositivo sin necesidad de descargar aplicaciones.</p>
+                        <p>Tu menú se verá increíble en cualquier dispositivo sin necesidad de descargar aplicaciones.
+                        </p>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon"><i data-lucide="palette"></i></div>
                         <h3>Totalmente Personalizable</h3>
-                        <p>Adapta los colores, el logo y la tipografía para que coincidan con la identidad de tu marca.</p>
+                        <p>Adapta los colores, el logo y la tipografía para que coincidan con la identidad de tu marca.
+                        </p>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon"><i data-lucide="zap"></i></div>
@@ -69,18 +78,20 @@
                     <h1>MenQR</h1>
                     <p>Gestiona tu menú digital</p>
                 </div>
-                <div id="auth-message" style="display: none; padding: 1rem; margin-top: 1rem; border-radius: 8px; text-align: center; font-weight: 500; font-size: 0.9rem;"></div>
+                <div id="auth-message"
+                    style="display: none; padding: 1rem; margin-top: 1rem; border-radius: 8px; text-align: center; font-weight: 500; font-size: 0.9rem;">
+                </div>
                 <div class="auth-tabs">
                     <button class="auth-tab active" onclick="app.auth.switchTab('login')">Iniciar Sesión</button>
                     <button class="auth-tab" onclick="app.auth.switchTab('register')">Crear Cuenta</button>
                 </div>
-                
+
                 <div id="form-login" class="auth-form" style="display: flex;">
                     <input type="email" id="login-email" placeholder="Correo electrónico" required>
                     <input type="password" id="login-password" placeholder="Contraseña" required>
                     <button class="btn-primary" onclick="app.auth.login()">Entrar</button>
                 </div>
-                
+
                 <div id="form-register" class="auth-form" style="display: none;">
                     <input type="email" id="register-email" placeholder="Correo electrónico" required>
                     <input type="password" id="register-password" placeholder="Contraseña" required>
@@ -92,17 +103,19 @@
 
         <!-- VISTA: ADMINISTRADOR (DASHBOARD) -->
         <section id="view-admin" class="view admin-view">
-            
+
             <!-- Contenido Principal del Dashboard -->
             <main class="admin-content">
-                
+
                 <!-- SECCIÓN: PRODUCTOS -->
                 <div id="sec-productos" class="admin-section active">
                     <div class="section-header">
                         <h2>Productos</h2>
-                        <button class="btn-primary" onclick="app.ui.showModal('modal-producto')"><i data-lucide="plus"></i> Añadir</button>
+                        <button class="btn-primary" onclick="app.ui.showModal('modal-producto')"><i
+                                data-lucide="plus"></i> Añadir</button>
                     </div>
-                    <div id="admin-category-filter" class="public-categories" style="margin-bottom: 1.5rem; justify-content: flex-start; overflow-x: auto;">
+                    <div id="admin-category-filter" class="public-categories"
+                        style="margin-bottom: 1.5rem; justify-content: flex-start; overflow-x: auto;">
                         <!-- Category chips injected by JS -->
                     </div>
                     <div id="productos-list" class="items-list">
@@ -110,11 +123,14 @@
                     </div>
                 </div>
 
+
+
                 <!-- SECCIÓN: CATEGORÍAS -->
                 <div id="sec-categorias" class="admin-section">
                     <div class="section-header">
                         <h2>Categorías</h2>
-                        <button class="btn-primary" onclick="app.ui.showModal('modal-categoria')"><i data-lucide="plus"></i> Añadir</button>
+                        <button class="btn-primary" onclick="app.ui.showModal('modal-categoria')"><i
+                                data-lucide="plus"></i> Añadir</button>
                     </div>
                     <div id="categorias-list" class="items-list">
                         <!-- Lista de categorías dinámica -->
@@ -128,7 +144,8 @@
                     <div class="section-header">
                         <div>
                             <h2 style="margin: 0; margin-bottom: 0.2rem;">Branding</h2>
-                            <p style="margin: 0; opacity: 0.7; font-size: 0.9rem;">Personaliza la identidad de tu restaurante</p>
+                            <p style="margin: 0; opacity: 0.7; font-size: 0.9rem;">Personaliza la identidad de tu
+                                restaurante</p>
                         </div>
                     </div>
                     <div class="branding-container">
@@ -143,11 +160,13 @@
                             </div>
                             <div class="form-group">
                                 <label>Subir Logo (Opcional)</label>
-                                <input type="file" id="brand-logo" accept="image/*" onchange="app.cropper.open(this, 1)">
+                                <input type="file" id="brand-logo" accept="image/*"
+                                    onchange="app.cropper.open(this, 1)">
                             </div>
                             <div class="form-group">
                                 <label>Subir Foto Portada (Opcional)</label>
-                                <input type="file" id="brand-cover" accept="image/*" onchange="app.cropper.open(this, 16/9)">
+                                <input type="file" id="brand-cover" accept="image/*"
+                                    onchange="app.cropper.open(this, 16/9)">
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
@@ -164,12 +183,15 @@
                                     </select>
                                 </div>
                             </div>
-                            <button class="btn-primary full-width" onclick="app.branding.save()" style="margin-bottom: 1rem;">Guardar Cambios</button>
-                            <button class="btn-secondary full-width" onclick="app.auth.logout()" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">Cerrar Sesión</button>
+                            <button class="btn-primary full-width" onclick="app.branding.save()"
+                                style="margin-bottom: 1rem;">Guardar Cambios</button>
+                            <button class="btn-secondary full-width" onclick="app.auth.logout()"
+                                style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">Cerrar Sesión</button>
                         </div>
                         <div class="branding-preview-container">
                             <div class="mobile-preview-hint">
-                                <i data-lucide="chevron-down" style="vertical-align: middle;"></i> Desliza hacia abajo para ver la previsualización
+                                <i data-lucide="chevron-down" style="vertical-align: middle;"></i> Desliza hacia abajo
+                                para ver la previsualización
                             </div>
                             <h3>Vista Previa en Vivo</h3>
                             <div class="phone-mockup">
@@ -221,14 +243,18 @@
                     <div class="qr-container glass-card">
                         <div id="qrcode-render" class="qrcode-wrapper"></div>
                         <div class="qr-actions">
-                            <button class="btn-secondary" onclick="app.qr.copyLink()"><i data-lucide="link"></i> Copiar Link</button>
-                            <button class="btn-secondary" onclick="app.qr.download()"><i data-lucide="download"></i> Descargar</button>
-                            <button class="btn-primary" onclick="app.qr.openMenu()"><i data-lucide="external-link"></i> Ver Menú</button>
+                            <button class="btn-secondary" onclick="app.qr.copyLink()"><i data-lucide="link"></i> Copiar
+                                Link</button>
+                            <button class="btn-secondary" onclick="app.qr.download()"><i data-lucide="download"></i>
+                                Descargar</button>
+                            <button class="btn-primary" onclick="app.qr.openMenu()"><i data-lucide="external-link"></i>
+                                Ver Menú</button>
                         </div>
                     </div>
-                    
+
                     <div style="margin-top: 3rem; text-align: center;">
-                        <button class="btn-secondary" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" onclick="app.auth.logout()">
+                        <button class="btn-secondary" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);"
+                            onclick="app.auth.logout()">
                             <i data-lucide="log-out"></i> Cerrar Sesión
                         </button>
                     </div>
@@ -307,13 +333,15 @@
                         <span class="slider round"></span>
                     </label>
                 </div>
-                
+
                 <hr style="border:0; border-top:1px solid var(--sys-border); margin: 1.5rem 0;">
-                
+
                 <div class="form-group">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
+                    <div
+                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
                         <label style="margin:0;">Acompañamientos del Producto</label>
-                        <button class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="app.productos.addAddonRow()">+ Añadir</button>
+                        <button class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;"
+                            onclick="app.productos.addAddonRow()">+ Añadir</button>
                     </div>
                     <div id="prod-addons-container" style="display:flex; flex-direction:column; gap: 0.5rem;">
                         <!-- Filas de acompañamientos dinámicas -->
@@ -332,7 +360,8 @@
         <div class="modal-content glass-card">
             <div class="modal-header">
                 <h3>Nueva Categoría</h3>
-                <button class="close-btn" onclick="app.ui.closeModal('modal-categoria')"><i data-lucide="x"></i></button>
+                <button class="close-btn" onclick="app.ui.closeModal('modal-categoria')"><i
+                        data-lucide="x"></i></button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
@@ -362,7 +391,7 @@
                     <div class="pub-modal-price" id="pub-modal-price">$0.00</div>
                 </div>
                 <p id="pub-modal-desc">Descripción</p>
-                
+
                 <div id="pub-modal-addons-container" class="pub-addons-section" style="display: none;">
                     <h3>Acompañamientos</h3>
                     <div id="pub-modal-addons-list">
@@ -380,7 +409,8 @@
                 <h3>Ajustar Imagen</h3>
                 <button class="close-btn" onclick="app.cropper.cancel()"><i data-lucide="x"></i></button>
             </div>
-            <div class="modal-body" style="max-height: 60vh; padding: 0; background: #1e293b; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            <div class="modal-body"
+                style="max-height: 60vh; padding: 0; background: #1e293b; overflow: hidden; display: flex; align-items: center; justify-content: center;">
                 <img id="cropper-image" src="" style="max-width: 100%; max-height: 100%; display: block;">
             </div>
             <div class="modal-footer">
@@ -399,4 +429,5 @@
         lucide.createIcons();
     </script>
 </body>
+
 </html>
