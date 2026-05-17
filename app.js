@@ -130,8 +130,7 @@ const app = {
             app.state.banner = {
                 active: restData.banner_active,
                 msg: restData.banner_msg || "",
-                emoji: restData.banner_emoji || "",
-                date: restData.banner_date || ""
+                emoji: restData.banner_emoji || ""
             };
 
             // Fetch categories
@@ -733,27 +732,24 @@ const app = {
             document.getElementById('banner-active').checked = b.active;
             document.getElementById('banner-msg').value = b.msg;
             document.getElementById('banner-emoji').value = b.emoji;
-            document.getElementById('banner-date').value = b.date;
         },
         save: async () => {
             const active = document.getElementById('banner-active').checked;
             const msg = document.getElementById('banner-msg').value;
             const emoji = document.getElementById('banner-emoji').value;
-            const date = document.getElementById('banner-date').value;
 
             const { error } = await supabaseClient
                 .from('restaurants')
                 .update({
                     banner_active: active,
                     banner_msg: msg,
-                    banner_emoji: emoji,
-                    banner_date: date || null
+                    banner_emoji: emoji
                 })
                 .eq('id', app.state.restaurantId);
 
             if (error) return alert("Error guardando banner");
 
-            app.state.banner = { active, msg, emoji, date };
+            app.state.banner = { active, msg, emoji };
             app.branding.updatePreview();
             alert("Banner guardado");
         }
@@ -853,15 +849,7 @@ const app = {
     generatePublicHTML: (brand, bannerInfo) => {
         let bannerHTML = '';
         if (bannerInfo && bannerInfo.active) {
-            // Check date validity if date exists
-            let showBanner = true;
-            if(bannerInfo.date) {
-                const today = new Date().toISOString().split('T')[0];
-                if(bannerInfo.date < today) showBanner = false;
-            }
-            if(showBanner) {
-                bannerHTML = `<div class="public-banner">${bannerInfo.emoji} ${bannerInfo.msg}</div>`;
-            }
+            bannerHTML = `<div class="public-banner">${bannerInfo.emoji} ${bannerInfo.msg}</div>`;
         }
 
         // Categorias UI
