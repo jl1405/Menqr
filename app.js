@@ -771,7 +771,7 @@ const app = {
                 text: app.qr.getLink(),
                 width: 200,
                 height: 200,
-                colorDark : app.state.branding.color,
+                colorDark : "#000000",
                 colorLight : "#ffffff",
                 correctLevel : QRCode.CorrectLevel.H
             });
