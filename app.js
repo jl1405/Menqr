@@ -878,6 +878,20 @@ const app = {
     renderPublicMenu: () => {
         const container = document.getElementById('view-public');
         container.innerHTML = app.generatePublicHTML(app.state.branding, app.state.banner);
+        
+        // Hide banner after 20 seconds
+        const banner = container.querySelector('.public-banner');
+        if(banner) {
+            setTimeout(() => {
+                banner.style.transition = 'opacity 0.5s ease, height 0.5s ease, margin 0.5s ease, padding 0.5s ease';
+                banner.style.opacity = '0';
+                banner.style.height = '0';
+                banner.style.margin = '0';
+                banner.style.padding = '0';
+                banner.style.overflow = 'hidden';
+                setTimeout(() => banner.remove(), 500);
+            }, 20000);
+        }
     },
 
     public: {
