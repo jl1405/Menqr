@@ -38,6 +38,9 @@ const app = {
         } else {
             await app.checkAuth();
         }
+
+        // Setup scrollspy
+        app.public.initScrollspy();
     },
 
     loadPublicData: async (restaurantId) => {
@@ -303,6 +306,7 @@ const app = {
 
         applyTo(document.getElementById('view-public'));
         applyTo(document.getElementById('live-preview'));
+        applyTo(document.getElementById('modal-public-product'));
         
         // Cargar fuente
         document.getElementById('theme-font').href = `https://fonts.googleapis.com/css2?family=${font}:wght@300;400;500;600;700&display=swap`;
@@ -852,30 +856,83 @@ const app = {
             bannerHTML = `<div class="public-banner">${bannerInfo.emoji} ${bannerInfo.msg}</div>`;
         }
 
+        const availableProducts = app.state.productos.filter(p => p.available);
+
         // Categorias UI
         let catHTML = '<div class="public-categories"><div class="cat-chip active" onclick="app.public.filterCategory(\'all\', this)">Todo</div>' + 
-            app.state.categorias.map(c => `<div class="cat-chip" onclick="app.public.filterCategory('${c.id}', this)">${c.name}</div>`).join('') + 
-            '</div>';
+            app.state.categorias.map(c => {
+                // Only render chip if category has active products
+                const hasProducts = availableProducts.some(p => p.category_id === c.id);
+                if (hasProducts) {
+                    return `<div class="cat-chip" onclick="app.public.filterCategory('${c.id}', this)">${c.name}</div>`;
+                }
+                return '';
+            }).join('');
+        
+        const unassignedProducts = availableProducts.filter(p => !p.category_id);
+        if (unassignedProducts.length > 0) {
+            catHTML += `<div class="cat-chip" onclick="app.public.filterCategory('unassigned', this)">Otros</div>`;
+        }
+        catHTML += '</div>';
 
-        // Productos UI
-        let prodHTML = '<div class="public-products" id="public-products-container">' + 
-            app.state.productos.filter(p => p.available).map(p => {
-                const placeholder = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22 fill=%22%23aaa%22%3E%3Crect width=%2280%22 height=%2280%22 fill=%22%23eee%22/%3E%3Ctext x=%2240%22 y=%2245%22 font-family=%22sans-serif%22 font-size=%2212%22 text-anchor=%22middle%22%3EImg%3C/text%3E%3C/svg%3E";
-                return `
-                <div class="pub-product-card" data-category="${p.category_id || 'unassigned'}" onclick="app.public.openProduct('${p.id}')" style="cursor: pointer;">
-                    ${p.image_url ? `<img src="${p.image_url}" class="pub-product-img" onerror="this.src='${placeholder}'">` : `<img src="${placeholder}" class="pub-product-img">`}
-                    <div class="pub-product-info">
-                        <h4>${p.name}</h4>
-                        <p>${p.description || p.desc || ''}</p>
-                        <div class="pub-product-price">$${p.price.toFixed(2)}</div>
+        // Productos UI grouped by Category
+        let prodHTML = '<div class="public-products" id="public-products-container">';
+
+        if (availableProducts.length === 0) {
+            prodHTML += '<p style="text-align:center; padding: 2rem; opacity:0.6">No hay productos disponibles por el momento.</p>';
+        } else {
+            // Render active categories
+            app.state.categorias.forEach(c => {
+                const catProducts = availableProducts.filter(p => p.category_id === c.id);
+                if (catProducts.length > 0) {
+                    prodHTML += `
+                    <div class="public-cat-section" id="cat-section-${c.id}" data-category-id="${c.id}">
+                        <h3 class="public-cat-title">${c.name}</h3>
+                        <div class="public-products-grid">
+                            ${catProducts.map(p => {
+                                const placeholder = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22 fill=%22%23aaa%22%3E%3Crect width=%2280%22 height=%2280%22 fill=%22%23eee%22/%3E%3Ctext x=%2240%22 y=%2245%22 font-family=%22sans-serif%22 font-size=%2212%22 text-anchor=%22middle%22%3EImg%3C/text%3E%3C/svg%3E";
+                                return `
+                                <div class="pub-product-card" data-category="${p.category_id || 'unassigned'}" onclick="app.public.openProduct('${p.id}')" style="cursor: pointer;">
+                                    ${p.image_url ? `<img src="${p.image_url}" class="pub-product-img" onerror="this.src='${placeholder}'">` : `<img src="${placeholder}" class="pub-product-img">`}
+                                    <div class="pub-product-info">
+                                        <h4>${p.name}</h4>
+                                        <p>${p.description || p.desc || ''}</p>
+                                        <div class="pub-product-price">$${p.price.toFixed(2)}</div>
+                                    </div>
+                                </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                    `;
+                }
+            });
+
+            // Render unassigned products
+            if (unassignedProducts.length > 0) {
+                prodHTML += `
+                <div class="public-cat-section" id="cat-section-unassigned" data-category-id="unassigned">
+                    <h3 class="public-cat-title">Otros</h3>
+                    <div class="public-products-grid">
+                        ${unassignedProducts.map(p => {
+                            const placeholder = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22 fill=%22%23aaa%22%3E%3Crect width=%2280%22 height=%2280%22 fill=%22%23eee%22/%3E%3Ctext x=%2240%22 y=%2245%22 font-family=%22sans-serif%22 font-size=%2212%22 text-anchor=%22middle%22%3EImg%3C/text%3E%3C/svg%3E";
+                            return `
+                            <div class="pub-product-card" data-category="unassigned" onclick="app.public.openProduct('${p.id}')" style="cursor: pointer;">
+                                ${p.image_url ? `<img src="${p.image_url}" class="pub-product-img" onerror="this.src='${placeholder}'">` : `<img src="${placeholder}" class="pub-product-img">`}
+                                <div class="pub-product-info">
+                                    <h4>${p.name}</h4>
+                                    <p>${p.description || p.desc || ''}</p>
+                                    <div class="pub-product-price">$${p.price.toFixed(2)}</div>
+                                </div>
+                            </div>
+                            `;
+                        }).join('')}
                     </div>
                 </div>
                 `;
-            }).join('') + '</div>';
-
-        if(app.state.productos.filter(p=>p.available).length === 0) {
-            prodHTML = '<p style="text-align:center; padding: 2rem; opacity:0.6">No hay productos disponibles por el momento.</p>';
+            }
         }
+        prodHTML += '</div>';
 
         const coverStyle = brand.cover ? `background-image: url('${brand.cover}');` : 'background: var(--brand-primary);';
         
@@ -953,33 +1010,59 @@ const app = {
             chips.forEach(c => c.classList.remove('active'));
             if(btn) btn.classList.add('active');
 
-            // Filter products
-            const cards = document.querySelectorAll('.pub-product-card');
-            let visibleCount = 0;
-            
-            cards.forEach(card => {
-                if(categoryId === 'all' || card.dataset.category === categoryId) {
-                    card.style.display = 'flex';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+            // Temporarily disable scrollspy during smooth scroll to prevent highlight jumping
+            window.isScrollingToSection = true;
+            if(window.scrollspyTimeout) clearTimeout(window.scrollspyTimeout);
 
-            // Handle empty state message
-            let emptyMsg = document.getElementById('pub-empty-msg');
-            if (visibleCount === 0) {
-                if (!emptyMsg) {
-                    emptyMsg = document.createElement('p');
-                    emptyMsg.id = 'pub-empty-msg';
-                    emptyMsg.style = 'text-align:center; padding: 2rem; opacity:0.6; width: 100%;';
-                    emptyMsg.textContent = 'No hay productos en esta categoría.';
-                    document.getElementById('public-products-container').appendChild(emptyMsg);
+            if(categoryId === 'all') {
+                const header = document.querySelector('.public-info');
+                if(header) {
+                    header.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
-                emptyMsg.style.display = 'block';
-            } else if (emptyMsg) {
-                emptyMsg.style.display = 'none';
+            } else {
+                const section = document.getElementById(`cat-section-${categoryId}`);
+                if(section) {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
             }
+
+            // Re-enable scrollspy after scroll animation completes
+            window.scrollspyTimeout = setTimeout(() => {
+                window.isScrollingToSection = false;
+            }, 800);
+        },
+        initScrollspy: () => {
+            window.addEventListener('scroll', () => {
+                // Only run if public view is active and we are not programmatically scrolling
+                if(window.isScrollingToSection) return;
+                if(!document.getElementById('view-public').classList.contains('active')) return;
+
+                const sections = document.querySelectorAll('.public-cat-section');
+                const chips = document.querySelectorAll('.cat-chip');
+                let currentActiveId = 'all';
+
+                sections.forEach(sec => {
+                    const rect = sec.getBoundingClientRect();
+                    // If the section top is above the threshold (e.g. 160px from top) and bottom is below it
+                    if (rect.top <= 160 && rect.bottom >= 160) {
+                        currentActiveId = sec.dataset.categoryId;
+                    }
+                });
+
+                chips.forEach(chip => {
+                    const onClickStr = chip.getAttribute('onclick') || '';
+                    if(onClickStr.includes(`'${currentActiveId}'`)) {
+                        chip.classList.add('active');
+                        // Auto-scroll the chips bar so the active chip is centered/visible
+                        chip.parentElement.scrollTo({
+                            left: chip.offsetLeft - 20,
+                            behavior: 'smooth'
+                        });
+                    } else {
+                        chip.classList.remove('active');
+                    }
+                });
+            }, { passive: true });
         }
     }
 };
