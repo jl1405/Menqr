@@ -355,8 +355,38 @@ const app = {
             document.getElementById(tabId).classList.add('active');
             document.querySelector(`.nav-item[data-target="${tabId}"]`).classList.add('active');
             
+            // Scroll to top
+            setTimeout(() => {
+                const content = document.querySelector('.admin-content');
+                if(content) content.scrollTo({top: 0, behavior: 'smooth'});
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            }, 50);
+            
             if(tabId === 'sec-qr') app.qr.generate();
-            if(tabId === 'sec-branding') app.branding.updatePreview();
+            if(tabId === 'sec-branding') {
+                app.branding.updatePreview();
+                if(window.innerWidth <= 768) {
+                    app.ui.showToast("Desliza hacia abajo para ver tu menú", 4000);
+                }
+            }
+        },
+        showToast: (msg, duration = 3000) => {
+            let toast = document.getElementById('app-toast');
+            if(!toast) {
+                toast = document.createElement('div');
+                toast.id = 'app-toast';
+                toast.style.cssText = 'position:fixed; bottom: 80px; left:50%; transform:translateX(-50%); background:var(--brand-primary); color:white; padding:0.8rem 1.5rem; border-radius:30px; box-shadow:0 10px 25px rgba(0,0,0,0.2); z-index:9999; font-weight:600; text-align:center; animation: slideUp 0.3s ease; display:flex; align-items:center; gap:0.5rem; width:max-content; max-width:90%;';
+                document.body.appendChild(toast);
+                const style = document.createElement('style');
+                style.textContent = '@keyframes slideUp { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }';
+                document.head.appendChild(style);
+            }
+            toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> <span>${msg}</span>`;
+            toast.style.display = 'flex';
+            if(window.toastTimer) clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => {
+                toast.style.display = 'none';
+            }, duration);
         },
         showModal: (id) => {
             document.getElementById(id).classList.add('active');

@@ -58,6 +58,8 @@ p { color: var(--brand-text-muted); line-height: 1.5; }
 label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 600; color: var(--brand-text-muted); }
 input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="date"], select, textarea {
     width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     padding: 0.8rem 1rem;
     background: #f1f5f9;
     border: 1px solid var(--sys-border);
@@ -65,6 +67,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="num
     color: var(--brand-text);
     font-family: inherit;
     transition: var(--transition);
+    min-height: 46px;
 }
 input:focus, select:focus, textarea:focus {
     outline: none;
@@ -152,7 +155,23 @@ input:checked + .slider:before { transform: translateX(22px); }
 
 /* Branding Layout */
 .branding-container { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-@media (max-width: 768px) { .branding-container { grid-template-columns: 1fr; } }
+@media (max-width: 768px) { 
+    .branding-container { grid-template-columns: 1fr; }
+    .mobile-preview-hint { display: block; }
+}
+.mobile-preview-hint {
+    display: none;
+    text-align: center;
+    padding: 1rem 0;
+    color: var(--brand-primary);
+    font-size: 0.95rem;
+    font-weight: 600;
+    animation: bounce 2s infinite;
+}
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(8px); }
+}
 .phone-mockup {
     width: 300px; height: 600px; border: 12px solid #222; border-radius: 40px;
     margin: 0 auto; overflow: hidden; position: relative;
