@@ -304,7 +304,7 @@ input:checked + .slider:before { transform: translateX(22px); }
 .hero-section { max-width: 800px; margin: 0 auto 5rem; }
 .hero-title { font-size: 3.5rem; font-weight: 800; color: var(--brand-text); margin-bottom: 1.5rem; line-height: 1.1; }
 .hero-title span { color: var(--brand-primary); }
-.hero-subtitle { font-size: 1.2rem; color: var(--brand-text-muted); margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+.hero-subtitle { font-size: 1.2rem; color: var(--brand-text-muted); margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto; text-align: justify; }
 .hero-btn { font-size: 1.1rem; padding: 1rem 2rem; border-radius: 50px; box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3); }
 .features-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 4rem; }
 .feature-card { background: var(--brand-bg); padding: 2.5rem 2rem; border-radius: var(--sys-radius); border: 1px solid var(--sys-border); text-align: center; transition: var(--transition); }
@@ -312,7 +312,7 @@ input:checked + .slider:before { transform: translateX(22px); }
 .feature-icon { width: 64px; height: 64px; background: #e0f2fe; color: var(--brand-primary); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; }
 .feature-icon i { width: 32px; height: 32px; }
 .feature-card h3 { font-size: 1.25rem; margin-bottom: 1rem; color: var(--brand-text); }
-.feature-card p { font-size: 0.95rem; }
+.feature-card p { font-size: 0.95rem; text-align: justify; }
 .landing-footer { text-align: center; padding: 2rem; border-top: 1px solid var(--sys-border); color: var(--brand-text-muted); font-size: 0.9rem; margin-top: 3rem; }
 
 @media (max-width: 768px) {
@@ -499,6 +499,7 @@ input:checked + .slider:before { transform: translateX(22px); }
     line-height: 1.6;
     margin-bottom: 2rem;
     color: var(--brand-text-muted);
+    text-align: justify;
 }
 
 .info-bullets {
@@ -545,6 +546,7 @@ input:checked + .slider:before { transform: translateX(22px); }
     font-size: 0.95rem;
     color: var(--brand-text-muted);
     line-height: 1.5;
+    text-align: justify;
 }
 
 /* Info Section Image styling */
@@ -611,6 +613,7 @@ input:checked + .slider:before { transform: translateX(22px); }
     color: var(--brand-text-muted);
     max-width: 600px;
     margin: 0 auto 3rem;
+    text-align: justify;
 }
 
 /* Interactive Billing Toggle */
@@ -766,6 +769,7 @@ input:checked + .slider:before { transform: translateX(22px); }
     line-height: 1.5;
     margin-bottom: 2rem;
     min-height: 57px;
+    text-align: justify;
 }
 
 .price-container {
