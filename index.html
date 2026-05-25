@@ -63,6 +63,114 @@
                         <p>Cambia precios o disponibilidad de platillos y tus clientes lo verán al instante.</p>
                     </div>
                 </div>
+
+                <!-- SECCIÓN DE INFORMACIÓN DETALLADA (PROFESIONAL) -->
+                <div class="info-section">
+                    <div class="info-content">
+                        <span class="section-tag">TECNOLOGÍA PREMIUM</span>
+                        <h2>Lleva tu restaurante al siguiente nivel con un menú inteligente</h2>
+                        <p>MenQR no es solo un código QR pasivo. Es una plataforma digital completa diseñada para optimizar la experiencia de tus clientes, acelerar el servicio y disparar tus ventas. Destaca tus especialidades, comunica promociones en tiempo real y ofrece un catálogo dinámico y visualmente cautivador.</p>
+                        
+                        <ul class="info-bullets">
+                            <li>
+                                <div class="bullet-icon"><i data-lucide="check-circle-2"></i></div>
+                                <div class="bullet-text">
+                                    <strong>Branding Personalizado:</strong>
+                                    <span>Define colores, tipografías y logotipos para que tu menú digital sea una extensión fiel de la personalidad de tu restaurante.</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="bullet-icon"><i data-lucide="check-circle-2"></i></div>
+                                <div class="bullet-text">
+                                    <strong>Gestión Instantánea:</strong>
+                                    <span>¿Cambios de precio o ingredientes de último minuto? Actualiza tu inventario y platillos desde el panel de control y tus clientes verán los cambios en segundos sin reimprimir nada.</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="bullet-icon"><i data-lucide="check-circle-2"></i></div>
+                                <div class="bullet-text">
+                                    <strong>Acompañamientos y Extras:</strong>
+                                    <span>Permite que tus comensales personalicen sus platos seleccionando aderezos, guarniciones o términos de cocción directamente en la pantalla.</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="info-image-container">
+                        <div class="image-wrapper">
+                            <img src="landing-hero.jpg" alt="MenQR Menú Digital en Tablet y Comida Flotante" class="info-image">
+                            <div class="image-glow"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN DE PLANES Y PRECIOS -->
+                <div class="pricing-section" id="planes">
+                    <span class="section-tag">TARIFAS CLARAS</span>
+                    <h2>Nuestros Planes</h2>
+                    <p class="pricing-subtitle">Comienza hoy mismo a modernizar tu restaurante. Elige el plan que mejor se adapte a tus necesidades sin plazos forzosos.</p>
+                    
+                    <div class="billing-toggle-container">
+                        <span class="billing-label active" id="label-monthly">Facturación Mensual</span>
+                        <button class="billing-toggle-btn" id="billing-toggle" onclick="toggleBilling()" aria-label="Cambiar ciclo de facturación">
+                            <span class="billing-toggle-circle"></span>
+                        </button>
+                        <span class="billing-label" id="label-yearly">Facturación Anual <span class="badge-discount">Ahorra 20%</span></span>
+                    </div>
+                    
+                    <div class="pricing-grid">
+                        <!-- Plan Estándar -->
+                        <div class="pricing-card standard-card">
+                            <div class="card-header">
+                                <h3>Plan Estándar</h3>
+                                <p class="plan-desc">Perfecto para restaurantes y cafeterías que buscan digitalizar su carta y gestionar su presencia en vivo de forma profesional.</p>
+                                <div class="price-container">
+                                    <span class="price-currency">$</span>
+                                    <span class="price-value" id="price-standard">13</span>
+                                    <span class="price-period" id="period-standard">/mes</span>
+                                </div>
+                                <div class="regular-price-hint" id="regular-price-hint">Precio regular: <span style="text-decoration: line-through;">$15/mes</span></div>
+                            </div>
+                            <div class="card-features">
+                                <ul>
+                                    <li><i data-lucide="check"></i> Menú digital interactivo</li>
+                                    <li><i data-lucide="check"></i> Personalización de diseño y marca</li>
+                                    <li><i data-lucide="check"></i> Publicaciones y platillos ilimitados</li>
+                                    <li><i data-lucide="check"></i> Banners promocionales en vivo</li>
+                                    <li><i data-lucide="check"></i> Alojamiento gratuito y rápido</li>
+                                    <li><i data-lucide="check"></i> Código QR dinámico descargable</li>
+                                </ul>
+                            </div>
+                            <div class="card-footer-btn">
+                                <button class="btn-primary full-width" onclick="app.ui.switchView('auth'); app.auth.switchTab('register')">Comenzar Ahora</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Plan Premium -->
+                        <div class="pricing-card premium-card featured">
+                            <div class="popular-badge">Siguiente Nivel</div>
+                            <div class="card-header">
+                                <h3>Plan Premium</h3>
+                                <span class="coming-soon-tag">Próximamente</span>
+                                <p class="plan-desc">La solución omnicanal para gestionar pedidos en línea directo desde la mesa de tu local.</p>
+                                <div class="price-container" style="margin-top: 1rem; margin-bottom: 1.5rem;">
+                                    <span class="price-premium-text">Próximamente</span>
+                                </div>
+                            </div>
+                            <div class="card-features">
+                                <ul>
+                                    <li><i data-lucide="check"></i> Todo lo incluido en el <strong>Plan Estándar</strong></li>
+                                    <li><i data-lucide="zap" class="premium-feature-icon" style="color: #f59e0b;"></i> <strong>Pedidos online e interacción directa</strong></li>
+                                    <li><i data-lucide="check" class="premium-feature-icon"></i> Gestión de comanda digital</li>
+                                    <li><i data-lucide="check" class="premium-feature-icon"></i> Alertas y notificaciones de pedidos</li>
+                                    <li><i data-lucide="check" class="premium-feature-icon"></i> Soporte técnico prioritario 24/7</li>
+                                </ul>
+                            </div>
+                            <div class="card-footer-btn">
+                                <button class="btn-secondary full-width" disabled style="opacity: 0.6; cursor: not-allowed;">Próximamente</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </main>
             <footer class="landing-footer">
                 <p>&copy; 2026 MenQR. Impulsa tu restaurante al futuro.</p>
@@ -421,6 +529,50 @@
     <script src="supabase.js"></script>
     <script src="app.js"></script>
     <script>
+        // Lógica de facturación de planes de precios (Mensual / Anual)
+        let isYearlyBilling = false;
+        function toggleBilling() {
+            isYearlyBilling = !isYearlyBilling;
+            const toggle = document.getElementById('billing-toggle');
+            const priceEl = document.getElementById('price-standard');
+            const periodEl = document.getElementById('period-standard');
+            const regularHint = document.getElementById('regular-price-hint');
+            const labelMonthly = document.getElementById('label-monthly');
+            const labelYearly = document.getElementById('label-yearly');
+            
+            if (isYearlyBilling) {
+                toggle.classList.add('yearly');
+                labelMonthly.classList.remove('active');
+                labelYearly.classList.add('active');
+                
+                // Animate price change
+                priceEl.style.transform = 'scale(0.8)';
+                priceEl.style.opacity = '0';
+                setTimeout(() => {
+                    priceEl.textContent = '10';
+                    periodEl.innerHTML = '/mes <span style="font-size:0.8rem; font-weight:normal; display:block; color:var(--brand-text-muted); margin-top: 4px;">Facturado anualmente ($120/año)</span>';
+                    regularHint.style.visibility = 'hidden';
+                    priceEl.style.transform = 'scale(1)';
+                    priceEl.style.opacity = '1';
+                }, 150);
+            } else {
+                toggle.classList.remove('yearly');
+                labelMonthly.classList.add('active');
+                labelYearly.classList.remove('active');
+                
+                // Animate price change
+                priceEl.style.transform = 'scale(0.8)';
+                priceEl.style.opacity = '0';
+                setTimeout(() => {
+                    priceEl.textContent = '13';
+                    periodEl.innerHTML = '/mes';
+                    regularHint.style.visibility = 'visible';
+                    priceEl.style.transform = 'scale(1)';
+                    priceEl.style.opacity = '1';
+                }, 150);
+            }
+        }
+
         lucide.createIcons();
     </script>
 </body>
